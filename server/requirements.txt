@@ -1,0 +1,7 @@
+# requirements.txt
+flask==2.0.1
+python-dotenv==0.19.0
+supabase==0.7.1
+openai==1.8.0
+uuid==1.30
+asyncio==3.4.3
