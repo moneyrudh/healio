@@ -1,0 +1,231 @@
+%-------------------------
+% Medical Record Template in LaTeX - Filled Example
+% Based on Healio documentation requirements
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{xcolor}
+\usepackage{fontawesome}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{etoolbox}
+
+% Set page geometry
+\geometry{
+  letterpaper,
+  top=0.75in,
+  bottom=0.75in,
+  left=0.75in,
+  right=0.75in
+}
+
+% Page style
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{\thepage}
+
+% Define colors
+\definecolor{medblue}{RGB}{0, 84, 147} % Medical blue color
+\definecolor{medgray}{RGB}{100, 100, 100} % Subtle gray for secondary text
+
+% Format section titles
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large\color{medblue}
+}{}{0em}{}[\color{medblue}\titlerule \vspace{8pt}]
+
+\titleformat{\subsection}{
+  \vspace{-2pt}\scshape\raggedright\normalsize\color{medblue}
+}{}{0em}{}[\vspace{-2pt}]
+
+% Custom commands for different formats
+\newcommand{\patientHeader}[5]{
+  \begin{center}
+    \textbf{\Large \scshape Medical Record} \\
+    \vspace{10pt}
+    \begin{tabular}{r l r l}
+      \textbf{Patient Name:} & #1 & \textbf{Date:} & #2 \\
+      \textbf{DOB:} & #3 & \textbf{MRN:} & #4 \\
+      \textbf{Provider:} & #5 & & \\
+    \end{tabular}
+  \end{center}
+  \vspace{0.8cm}
+}
+
+% Command for paragraph format
+\newcommand{\paragraphSection}[2]{
+  \section{#1}
+  \vspace{-0.2cm}
+  \begin{justify}
+    #2
+  \end{justify}
+  \vspace{0.4cm}
+}
+
+% Command for bullet points
+\newcommand{\bulletSection}[2]{
+  \section{#1}
+  \vspace{-0.2cm}
+  \begin{itemize}[leftmargin=0.5cm, label={\small\textbullet}, itemsep=0pt]
+    #2
+  \end{itemize}
+  \vspace{0.4cm}
+}
+
+% Command for numbered bullets
+\newcommand{\numberedSection}[2]{
+  \section{#1}
+  \vspace{-0.2cm}
+  \begin{enumerate}[leftmargin=0.7cm, label=\arabic*., itemsep=0pt]
+    #2
+  \end{enumerate}
+  \vspace{0.4cm}
+}
+
+% Command for vital signs table
+\newcommand{\vitalSignsSection}[5]{
+  \section{Vital Signs}
+  \vspace{-0.3cm}
+  \begin{center}
+    \begin{tabular}{|l|c|}
+      \hline
+      \textbf{Blood Pressure} & #1 \\
+      \hline
+      \textbf{Pulse} & #2 \\
+      \hline
+      \textbf{Respiratory Rate} & #3 \\
+      \hline
+      \textbf{Temperature} & #4 \\
+      \hline
+      \textbf{Oxygen Saturation} & #5 \\
+      \hline
+    \end{tabular}
+  \end{center}
+  \vspace{0.3cm}
+}
+
+% For generic vital signs with variable number of entries
+\newcommand{\genericVitalSignsSection}[1]{
+  \section{Vital Signs}
+  \vspace{-0.3cm}
+  \begin{itemize}[leftmargin=0.5cm, label={\small\textbullet}, itemsep=0pt]
+    #1
+  \end{itemize}
+  \vspace{0.3cm}
+}
+
+% Helper command for bullet items
+\newcommand{\bulletItem}[1]{
+  \item #1
+}
+
+% Helper command for numbered items
+\newcommand{\numberedItem}[1]{
+  \item #1
+}
+
+\begin{document}
+
+% Filled patient header
+\patientHeader{John Doe}{April 14, 2025}{Jan 15, 1973}{MRN-12345678}{Dr. Sarah Johnson}
+
+% Chief Complaint Section (Numbered Bullets)
+\numberedSection{Chief Complaint}{
+  \numberedItem{Progressive dyspnea on exertion.}
+  \numberedItem{Intermittent chest pain.}
+  \numberedItem{Palpitations.}
+}
+
+% History Section (Paragraph)
+\paragraphSection{History of Present Illness}{
+  Mr. John Doe, a 52-year-old male, presents with a three-month history of progressive dyspnea on exertion and intermittent chest pain. The chest discomfort is described as substernal pressure that occasionally radiates to the left arm and is relieved by rest. The patient reports that these symptoms have gradually worsened over the past three weeks, now occurring with minimal exertion such as climbing one flight of stairs. He also reports occasional palpitations but denies syncope, orthopnea, or paroxysmal nocturnal dyspnea. Patient has a history of hypertension, hyperlipidemia, and a 30-pack-year smoking history, though he quit 5 years ago.
+}
+
+% Subjective Section (Paragraph)
+\paragraphSection{Subjective}{
+  Mr. Doe reports progressive shortness of breath with exertion, substernal chest pain radiating to the left arm, and recent palpitations. He describes the chest pain as a pressure sensation that typically lasts 3-5 minutes and is relieved by rest. He rates the pain as 6/10 at its worst. The patient denies nausea, vomiting, diaphoresis, or jaw pain associated with these episodes. He reports good medication compliance with his antihypertensive medication. His exercise has become limited due to these symptoms. No previous similar episodes before the onset three months ago.
+}
+
+% Vital Signs Section (Bullet Points)
+\genericVitalSignsSection{
+  \bulletItem{Blood pressure: 140/90 mmHg}
+  \bulletItem{Pulse: 76 beats per minute}
+  \bulletItem{Respiratory rate: 16 breaths per minute}
+  \bulletItem{Temperature: 98.6 degrees Fahrenheit}
+  \bulletItem{Oxygen saturation: 97\% on room air}
+}
+
+% Alternatively, could use the table format:
+% \vitalSignsSection{140/90 mmHg}{76 bpm}{16 breaths/min}{98.6°F}{97\% RA}
+
+% Physical Examination Section (Bullet Points)
+\bulletSection{Physical Examination}{
+  \bulletItem{Patient appears well-nourished and in no acute distress.}
+  \bulletItem{Normal S1 and S2 heart sounds with no audible murmurs, rubs, or gallops.}
+  \bulletItem{Lungs clear to auscultation bilaterally.}
+  \bulletItem{No peripheral edema noted.}
+  \bulletItem{Pulses are 2+ and symmetric in all extremities.}
+  \bulletItem{No carotid bruits.}
+  \bulletItem{Abdomen is soft, non-tender, with normal bowel sounds.}
+}
+
+% Objective Section (Bullet Points)
+\bulletSection{Objective}{
+  \bulletItem{Blood pressure measured at 140/90 mmHg.}
+  \bulletItem{Regular pulse rate at 76 beats per minute.}
+  \bulletItem{12-lead ECG shows normal sinus rhythm with no ST-segment changes.}
+  \bulletItem{Recent lipid panel shows total cholesterol of 240 mg/dL, LDL 160 mg/dL.}
+  \bulletItem{Hemoglobin A1c: 5.8\%}
+  \bulletItem{Basic metabolic panel within normal limits.}
+}
+
+% Assessment Section (Numbered Bullets)
+\numberedSection{Assessment}{
+  \numberedItem{Stable angina pectoris.}
+  \numberedItem{Potential coronary artery disease.}
+  \numberedItem{Differential diagnosis includes gastroesophageal reflux disease and panic disorder.}
+  \numberedItem{Hypertension - not optimally controlled.}
+  \numberedItem{Hyperlipidemia - not at target.}
+  \numberedItem{Smoking history with moderate COPD risk.}
+}
+
+% Plan Section (Numbered Bullets)
+\numberedSection{Plan}{
+  \numberedItem{Stress echocardiogram to evaluate for myocardial ischemia.}
+  \numberedItem{24-hour Holter monitor to capture arrhythmic events.}
+  \numberedItem{Optimize hypertension management with increased dose of current medication.}
+  \numberedItem{Increase statin dose to address elevated LDL.}
+  \numberedItem{Provide education on cardiac warning signs requiring emergency evaluation.}
+  \numberedItem{Follow-up appointment in 2 weeks to review diagnostic test results.}
+}
+
+% Medications Section (Numbered Bullets)
+\numberedSection{Medications}{
+  \numberedItem{Atorvastatin 20 mg daily for cholesterol management, increasing to 40 mg daily.}
+  \numberedItem{Lisinopril 10 mg daily, increasing to 20 mg daily for blood pressure control.}
+  \numberedItem{Aspirin 81 mg daily for cardioprotection.}
+  \numberedItem{Sublingual nitroglycerin 0.4 mg as needed for acute chest pain.}
+}
+
+% Notes Section (Paragraph)
+\paragraphSection{Additional Notes}{
+  Mr. Doe is advised to maintain a heart-healthy lifestyle, including a low-sodium, low-cholesterol diet and moderate daily exercise as tolerated. He is instructed to avoid strenuous activity until cardiac evaluation is complete. Patient was advised to keep a symptom journal documenting occurrence, duration, and severity of chest pain episodes. He verbalized understanding of when to use sublingual nitroglycerin and when to seek emergency care. Patient expressed some anxiety about possible heart disease diagnosis; reassurance provided and resources for cardiac support groups shared.
+}
+
+\end{document}

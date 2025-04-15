@@ -1,0 +1,227 @@
+%-------------------------
+% Medical Record Template in LaTeX
+% Based on Healio documentation requirements
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{xcolor}
+\usepackage{fontawesome}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{etoolbox}
+
+% Set page geometry
+\geometry{
+  letterpaper,
+  top=0.75in,
+  bottom=0.75in,
+  left=0.75in,
+  right=0.75in
+}
+
+% Page style
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{\thepage}
+
+% Define colors
+\definecolor{medblue}{RGB}{0, 84, 147} % Medical blue color
+\definecolor{medgray}{RGB}{100, 100, 100} % Subtle gray for secondary text
+
+% Format section titles
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large\color{medblue}
+}{}{0em}{}[\color{medblue}\titlerule \vspace{8pt}]
+
+\titleformat{\subsection}{
+  \vspace{-2pt}\scshape\raggedright\normalsize\color{medblue}
+}{}{0em}{}[\vspace{-2pt}]
+
+% Custom commands for different formats
+\newcommand{\patientHeader}[5]{
+  \begin{center}
+    \textbf{\Large \scshape Medical Record} \\
+    \vspace{10pt}
+    \begin{tabular}{r l r l}
+      \textbf{Patient Name:} & #1 & \textbf{Date:} & #2 \\
+      \textbf{DOB:} & #3 & \textbf{MRN:} & #4 \\
+      \textbf{Provider:} & #5 & & \\
+    \end{tabular}
+  \end{center}
+  \vspace{0.8cm}
+}
+
+% Command for paragraph format
+\newcommand{\paragraphSection}[2]{
+  \section{#1}
+  \vspace{-0.2cm}
+  \begin{justify}
+    #2
+  \end{justify}
+  \vspace{0.4cm}
+}
+
+% Command for bullet points
+\newcommand{\bulletSection}[2]{
+  \section{#1}
+  \vspace{-0.2cm}
+  \begin{itemize}[leftmargin=0.5cm, label={\small\textbullet}, itemsep=0pt]
+    #2
+  \end{itemize}
+  \vspace{0.4cm}
+}
+
+% Command for numbered bullets
+\newcommand{\numberedSection}[2]{
+  \section{#1}
+  \vspace{-0.2cm}
+  \begin{enumerate}[leftmargin=0.7cm, label=\arabic*., itemsep=0pt]
+    #2
+  \end{enumerate}
+  \vspace{0.4cm}
+}
+
+% Command for vital signs table
+\newcommand{\vitalSignsSection}[5]{
+  \section{Vital Signs}
+  \vspace{-0.3cm}
+  \begin{center}
+    \begin{tabular}{|l|c|}
+      \hline
+      \textbf{Blood Pressure} & #1 \\
+      \hline
+      \textbf{Pulse} & #2 \\
+      \hline
+      \textbf{Respiratory Rate} & #3 \\
+      \hline
+      \textbf{Temperature} & #4 \\
+      \hline
+      \textbf{Oxygen Saturation} & #5 \\
+      \hline
+    \end{tabular}
+  \end{center}
+  \vspace{0.3cm}
+}
+
+% For generic vital signs with variable number of entries
+\newcommand{\genericVitalSignsSection}[1]{
+  \section{Vital Signs}
+  \vspace{-0.3cm}
+  \begin{itemize}[leftmargin=0.5cm, label={\small\textbullet}, itemsep=0pt]
+    #1
+  \end{itemize}
+  \vspace{0.3cm}
+}
+
+% Helper command for bullet items
+\newcommand{\bulletItem}[1]{
+  \item #1
+}
+
+% Helper command for numbered items
+\newcommand{\numberedItem}[1]{
+  \item #1
+}
+
+\begin{document}
+
+% To be populated from patient data
+\patientHeader{John Doe}{April 14, 2025}{Jan 15, 1973}{MRN-12345678}{Dr. Sarah Johnson}
+
+% Chief Complaint Section (Numbered Bullets)
+\numberedSection{Chief Complaint}{
+  % To be populated from JSON: chief_complaint.items
+  % Example: \numberedItem{Progressive dyspnea on exertion.}
+    \numberedItem{Progressive dyspnea on exertion.}
+  \numberedItem{Intermittent chest pain.}
+  \numberedItem{Palpitations.}
+
+}
+
+% History Section (Paragraph)
+\paragraphSection{History of Present Illness}{
+  % To be populated from JSON: history.content
+  Mr. John Doe, a 52-year-old male, presents with a three-month history of progressive dyspnea on exertion and intermittent chest pain...
+}
+
+% Subjective Section (Paragraph)
+\paragraphSection{Subjective}{
+  % To be populated from JSON: subjective.content
+  Mr. Doe reports progressive shortness of breath...
+}
+
+% Vital Signs Section (Bullet Points or Table)
+% Use \vitalSignsSection{BP}{Pulse}{Resp}{Temp}{O2} for standard vital signs
+% Or use \genericVitalSignsSection{...} for bullet point format
+\genericVitalSignsSection{
+  % To be populated from JSON: vital_signs.items
+  % Example: \bulletItem{Blood pressure: 140/90 mmHg}
+    \bulletItem{Blood pressure: 140/90 mmHg}
+  \bulletItem{Pulse: 76 beats per minute}
+
+}
+
+% Physical Examination Section (Bullet Points)
+\bulletSection{Physical Examination}{
+  % To be populated from JSON: physical.items
+  % Example: \bulletItem{Patient appears well-nourished and in no acute distress.}
+    \bulletItem{Patient appears well-nourished and in no acute distress.}
+
+}
+
+% Objective Section (Bullet Points)
+\bulletSection{Objective}{
+  % To be populated from JSON: objective.items
+  % Example: \bulletItem{Blood pressure measured at 140/90 mmHg.}
+    \bulletItem{Blood pressure measured at 140/90 mmHg.}
+
+}
+
+% Assessment Section (Numbered Bullets)
+\numberedSection{Assessment}{
+  % To be populated from JSON: assessment.items
+  % Example: \numberedItem{Stable angina pectoris.}
+    \numberedItem{Stable angina pectoris.}
+
+}
+
+% Plan Section (Numbered Bullets)
+\numberedSection{Plan}{
+  % To be populated from JSON: plan.items
+  % Example: \numberedItem{Stress echocardiogram to evaluate for myocardial ischemia.}
+    \numberedItem{Stress echocardiogram to evaluate for myocardial ischemia.}
+
+}
+
+% Medications Section (Numbered Bullets)
+\numberedSection{Medications}{
+  % To be populated from JSON: medications.items
+  % Example: \numberedItem{Atorvastatin 20 mg daily for cholesterol management.}
+    \numberedItem{Atorvastatin 20 mg daily for cholesterol management.}
+
+}
+
+% Notes Section (Paragraph)
+\paragraphSection{Additional Notes}{
+  % To be populated from JSON: notes.content
+  Mr. Doe is advised to maintain a heart-healthy lifestyle...
+}
+
+\end{document}
