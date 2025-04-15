@@ -1,2 +1,6 @@
 .env
 venv
+**.aux
+**.log
+**.out
+**.pdf
