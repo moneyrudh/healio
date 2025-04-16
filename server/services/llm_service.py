@@ -3,7 +3,7 @@ import json
 import asyncio
 from enum import Enum
 import openai
-from ..db.client import get_openai
+from db.client import get_openai
 
 class StreamMode(Enum):
     """Enumeration of LLM stream response modes"""

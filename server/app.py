@@ -14,6 +14,7 @@ from db.chat_history import ChatHistoryManager
 from services.consultation_flow import ConsultationFlow
 from services.document_generator import DocumentGenerator
 from services.llm_service import LLMService, StreamMode
+from db.providers import ProviderManager
 
 # Create Flask app
 app = Flask(__name__)
@@ -25,6 +26,7 @@ chat_history = ChatHistoryManager()
 consultation_flow = ConsultationFlow()
 document_generator = DocumentGenerator()
 llm_service = LLMService()
+provider_manager = ProviderManager()
 
 # Global async event loop
 async_loop = None
@@ -40,6 +42,13 @@ def initialize_async():
 def health_check():
     """Health check endpoint"""
     return jsonify({"status": "healthy"})
+
+# Add provider endpoint
+@app.route('/api/providers', methods=['GET'])
+def get_providers():
+    """Get all available providers"""
+    providers = provider_manager.get_all_providers()
+    return jsonify(providers)
 
 @app.route('/api/patients', methods=['GET'])
 def get_patients():
@@ -318,5 +327,5 @@ def generate_pdf():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', port=port, debug=True)

@@ -1,7 +1,7 @@
 # services/consultation_flow.py
-from ..db.consultation import ConsultationManager, ConsultationSection
-from ..db.chat_history import ChatHistoryManager
-from ..db.vector_search import VectorSearch
+from db.consultation import ConsultationManager, ConsultationSection
+from db.chat_history import ChatHistoryManager
+from db.vector_search import VectorSearch
 from .llm_service import LLMService, StreamMode
 import asyncio
 
