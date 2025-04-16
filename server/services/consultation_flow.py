@@ -1,9 +1,18 @@
-# services/consultation_flow.py
+# services/consultation_flow.py (updated)
 from db.consultation import ConsultationManager, ConsultationSection
 from db.chat_history import ChatHistoryManager
 from db.vector_search import VectorSearch
 from .llm_service import LLMService, StreamMode
 import asyncio
+from enum import Enum, auto
+import json
+
+class ResponseClassification(Enum):
+    """Classification of doctor's responses for flow control"""
+    SECTION_COMPLETE = auto()  # Doctor has finished with this section
+    NEEDS_FOLLOWUP = auto()    # Doctor has provided info but may have more
+    MEDICAL_QUESTION = auto()  # Doctor has asked a medical question requiring evidence
+    GENERAL_QUESTION = auto()  # Doctor has asked a general question
 
 class ConsultationFlow:
     """Manages the flow of a medical consultation through its sections"""
@@ -61,56 +70,67 @@ class ConsultationFlow:
         else:
             return ConsultationSection.COMPLETE
     
-    def is_section_complete(self, doctor_input):
+    async def process_medical_question(self, consultation_id, user_message, current_section):
         """
-        Check if the current section is ready to be completed
-        based on doctor's input
+        Process a medical question in the DOUBTS section
         
         Args:
-            doctor_input: The doctor's latest message
+            consultation_id: The consultation session ID
+            user_message: The doctor's question
+            current_section: Current section (should be DOUBTS)
             
         Returns:
-            Boolean indicating if section should be completed
+            Dictionary with response data for streaming
         """
-        # Simple check for common completion phrases
-        completion_phrases = [
-            "next section", "done", "complete", "finished", "next", "move on",
-            "proceed", "continue", "that's all", "that is all", "nothing else"
-        ]
+        # Generate AI response using vector search
+        search_results = self.vector_search.search_medical_knowledge(user_message)
+        formatted_results = self.vector_search.format_search_results(search_results)
         
-        # Normalize input and check for completion phrases
-        input_lower = doctor_input.lower()
-        for phrase in completion_phrases:
-            if phrase in input_lower:
-                return True
-                
-        return False
-    
-    def is_medical_question(self, doctor_input):
+        # Create a system message for LLM
+        system_message = """
+        You are a medical AI assistant helping a doctor with their questions.
+        Use the provided medical literature to give evidence-based answers.
+        Format your response as valid JSON with the following structure:
+        {
+            "type": "rag",
+            "content": "Your evidence-based answer here",
+            "sources": ["source_id_1", "source_id_2"]
+        }
+        
+        Include only the source IDs you actually use in your answer.
+        Limit to 3 sources maximum.
+        After each complete JSON object, include the delimiter '\u001e\n'.
         """
-        Check if the doctor's input is a medical question (for DOUBTS section)
         
-        Args:
-            doctor_input: The doctor's latest message
-            
-        Returns:
-            Boolean indicating if input is a medical question
+        # Extract source IDs for reference
+        source_ids = []
+        for source in formatted_results.get('sources', []):
+            source_ids.append(source.get('id', ''))
+        
+        # Create a prompt that includes the search results
+        prompt = f"""
+        Doctor's Question: {user_message}
+        
+        Search Results:
+        {json.dumps(formatted_results, indent=2)}
+        
+        Source IDs available: {source_ids}
+        
+        Please provide a concise, evidence-based answer based on these sources.
+        Format as a JSON object as specified in the system instructions.
         """
-        # Simple check for question patterns
-        question_patterns = ["?", "what", "how", "when", "where", "which", "who", "why", "can", "could", "should", "would", "is", "are"]
         
-        input_lower = doctor_input.lower()
-        
-        # Check if it's a question
-        if "?" in input_lower:
-            return True
-            
-        # Check for question words at the beginning
-        for pattern in question_patterns:
-            if input_lower.startswith(pattern + " "):
-                return True
-                
-        return False
+        # Return streaming response configuration
+        return {
+            "type": "medical_question",
+            "stream_mode": StreamMode.JSON.value,
+            "user_message": user_message,
+            "prompt": prompt,
+            "system_message": system_message,
+            "current_section": current_section,
+            "search_results": formatted_results,
+            "source_ids": source_ids
+        }
     
     async def process_chat_message(self, consultation_id, user_message):
         """
@@ -138,10 +158,11 @@ class ConsultationFlow:
             section=current_section
         )
         
-        # Check if section is complete
-        should_transition = self.is_section_complete(user_message)
+        # Use AI to classify the doctor's response
+        classification = self.llm_service.classify_doctor_response(current_section, user_message)
         
-        if should_transition:
+        # Handle section completion
+        if classification == ResponseClassification.SECTION_COMPLETE:
             # Get next section
             next_section = self.get_next_section(current_section)
             
@@ -178,45 +199,40 @@ class ConsultationFlow:
                 "current_section": next_section.value if hasattr(next_section, 'value') else next_section
             }
         
-        # Special handling for DOUBTS section
-        if current_section == ConsultationSection.DOUBTS.value and self.is_medical_question(user_message):
-            # Generate AI response using vector search
-            search_results = self.vector_search.search_medical_knowledge(user_message)
-            formatted_results = self.vector_search.format_search_results(search_results)
-            
-            # Generate a system message for LLM
-            system_message = ("You are a medical AI assistant helping a doctor with their questions. "
-                            "Use the provided medical literature to give evidence-based answers. "
-                            "Be concise and factual. Cite your sources clearly.")
-            
-            # Create a prompt that includes the search results
-            prompt = f"""
-            Doctor's Question: {user_message}
-            
-            Search Results:
-            {formatted_results}
-            
-            Please provide a concise, evidence-based answer based on these sources.
+        # Special handling for medical questions in DOUBTS section
+        if current_section == ConsultationSection.DOUBTS.value and classification == ResponseClassification.MEDICAL_QUESTION:
+            return await self.process_medical_question(consultation_id, user_message, current_section)
+        
+        # For general questions in DOUBTS section
+        if current_section == ConsultationSection.DOUBTS.value and classification == ResponseClassification.GENERAL_QUESTION:
+            # Create system message for general questions
+            system_message = """
+            You are a medical AI assistant helping a doctor during a consultation.
+            Answer the doctor's general question based on your medical knowledge.
+            You don't need to provide citations for general questions.
             """
             
-            # Stream mode is JSON for DOUBTS section
+            prompt = f"Doctor's general question: {user_message}"
+            
+            # Return regular text streaming response
             return {
-                "type": "medical_question",
-                "stream_mode": StreamMode.JSON.value,
+                "type": "general_question",
+                "stream_mode": StreamMode.TEXT.value,
                 "user_message": user_message,
                 "prompt": prompt,
                 "system_message": system_message,
-                "current_section": current_section,
-                "search_results": formatted_results
+                "current_section": current_section
             }
         
-        # For regular follow-up in other sections
+        # For follow-up in any section
+        ai_message = None
+        
         if current_section == ConsultationSection.DOUBTS.value:
-            # Regular response for non-question in DOUBTS section
+            # Follow-up prompt for DOUBTS section
             ai_message = "Is there anything specific you'd like to know about this case? Or would you like to move to the next section?"
         else:
-            # Regular follow-up for other sections
-            ai_message = "Is there anything else to add for this section?"
+            # AI-generated follow-up question
+            ai_message = "Is there anything else you'd like to add to this section?"
         
         # Store AI response
         self.chat_history.store_message(

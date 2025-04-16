@@ -203,8 +203,8 @@ def chat():
     if response_data['type'] in ['section_transition', 'follow_up']:
         return jsonify(response_data)
     
-    # For medical questions, stream the response
-    if response_data['type'] == 'medical_question':
+    # For streaming responses (medical questions or general questions)
+    if response_data['type'] in ['medical_question', 'general_question']:
         # Determine stream mode
         stream_mode = StreamMode.JSON if response_data.get('stream_mode') == 'json' else StreamMode.TEXT
         
@@ -212,27 +212,79 @@ def chat():
             # Initial response data
             yield f"data: {{'type': 'start', 'current_section': '{response_data['current_section']}'}}\n\n"
             
-            # Stream LLM response
-            for chunk in async_loop.run_until_complete(
-                llm_service.stream_response(
-                    response_data['prompt'],
-                    mode=stream_mode,
-                    system_message=response_data.get('system_message')
-                )
-            ):
-                # Store complete message at the end
-                if isinstance(chunk, str):
-                    yield f"data: {chunk}\n\n"
+            # For medical questions with RAG
+            if response_data['type'] == 'medical_question' and stream_mode == StreamMode.JSON:
+                # Get source mapping for enriching responses
+                source_mapping = {}
+                for source in response_data.get('search_results', {}).get('sources', []):
+                    source_id = source.get('id')
+                    if source_id:
+                        source_mapping[source_id] = {
+                            "id": source_id,
+                            "pmcid": source.get('article_id', 'N/A'),
+                            "title": source.get('title', 'Unknown'),
+                            "authors": source.get('authors', [])
+                        }
+                
+                # Stream LLM response
+                for chunk in async_loop.run_until_complete(
+                    llm_service.stream_response(
+                        response_data['prompt'],
+                        mode=stream_mode,
+                        system_message=response_data.get('system_message')
+                    )
+                ):
+                    try:
+                        # Parse JSON chunk
+                        json_response = json.loads(chunk)
+                        
+                        # Enrich with source details
+                        source_ids = json_response.get('sources', [])
+                        enriched_sources = []
+                        
+                        for source_id in source_ids:
+                            if source_id in source_mapping:
+                                enriched_sources.append(source_mapping[source_id])
+                        
+                        # Replace source IDs with enriched sources
+                        json_response['sources'] = enriched_sources
+                        
+                        # Send to client
+                        yield f"data: {json.dumps(json_response)}\n\n"
+                        
+                    except json.JSONDecodeError:
+                        # Handle non-JSON chunks
+                        yield f"data: {{'type': 'text', 'content': {json.dumps(chunk)}}}\n\n"
+                
+            else:
+                # Regular text streaming for other responses
+                for chunk in async_loop.run_until_complete(
+                    llm_service.stream_response(
+                        response_data['prompt'],
+                        mode=stream_mode,
+                        system_message=response_data.get('system_message')
+                    )
+                ):
+                    if stream_mode == StreamMode.TEXT:
+                        yield f"data: {{'type': 'text', 'content': {json.dumps(chunk)}}}\n\n"
+                    else:
+                        yield f"data: {chunk}\n\n"
             
             # Final message
             yield f"data: {{'type': 'end'}}\n\n"
             
-            # Store the complete message in chat history
-            # Note: In a real implementation, you'd need to capture the complete response
+            # Prepare message for storing in chat history
+            final_message = "[Streamed response]"
+            if response_data['type'] == 'medical_question':
+                final_message = "[Evidence-based answer with sources]"
+            elif response_data['type'] == 'general_question':
+                final_message = "[Response to general question]"
+            
+            # Store in chat history
             chat_history.store_message(
                 consultation_id=consultation_id,
                 sender="ai",
-                message="[Streamed response for medical question]",
+                message=final_message,
                 section=response_data['current_section']
             )
         
