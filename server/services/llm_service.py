@@ -47,7 +47,7 @@ class LLMService:
                     "content": "You are a medical AI assistant that responds in JSON format. "
                     "Your responses must always be valid JSON objects. "
                     "All text content should be contained within JSON fields, never outside the JSON structure."
-                    "After each complete JSON object, include the exact string literal '//U001E//N' to indicate the end of the object."
+                    "After each complete JSON object (including the last one), include the exact string literal '//U001E//N' to indicate the end of the object."
                     "Limit your response to a maximum of 3 JSON objects."
                 })
         
