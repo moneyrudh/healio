@@ -299,84 +299,74 @@ def chat():
         
     #     return Response(stream_with_context(generate()), mimetype='text/event-stream')
     # For streaming responses (medical questions or general questions)
+    # Modified section of the chat endpoint in app.py
+    # Replace the streaming response section in the /api/chat route
+
+    # For streaming responses (medical questions or general questions)
     if response_data['type'] in ['medical_question', 'general_question']:
         # Determine stream mode
         stream_mode = StreamMode.JSON if response_data.get('stream_mode') == 'json' else StreamMode.TEXT
         
         # Get all chunks from LLM in one go
-        all_chunks = async_loop.run_until_complete(
+        processed_chunks = async_loop.run_until_complete(
             llm_service.get_stream_response(
                 response_data['prompt'],
                 mode=stream_mode,
                 system_message=response_data.get('system_message')
             )
         )
-        
-        # Process chunks for medical questions with RAG
-        processed_chunks = []
+        # print("processed chunks:", processed_chunks)
+        # print("response_data['search_results']:", response_data.get('search_results', {}))
+        # For medical questions with RAG, we still need to enrich with source details
         if response_data['type'] == 'medical_question' and stream_mode == StreamMode.JSON:
             # Get source mapping for enriching responses
             source_mapping = {}
+            # print("response_data:", response_data)
             for source in response_data.get('search_results', {}).get('sources', []):
-                source_id = source.get('id')
+                source_id = int(source.get('id'))
                 if source_id:
                     source_mapping[source_id] = {
                         "id": source_id,
                         "pmcid": source.get('article_id', 'N/A'),
                         "title": source.get('title', 'Unknown'),
-                        "authors": source.get('authors', [])
+                        "authors": [author["name"] for author in source.get('authors', [])]
                     }
             
-            # Process each chunk
-            for chunk in all_chunks:
+            # Enriched chunks
+            enriched_chunks = []
+            print("source mapping:", source_mapping)
+            # Process each chunk to enrich sources
+            for chunk in processed_chunks:
+                print("hi")
                 try:
-                    # Parse JSON chunk
-                    json_response = json.loads(chunk)
+                    # Parse the already-formatted JSON string
+                    parsed_json = json.loads(chunk)
                     
                     # Enrich with source details
-                    source_ids = json_response.get('sources', [])
+                    source_ids = parsed_json.get('sources', [])
                     enriched_sources = []
-                    
+
                     for source_id in source_ids:
+                        print("source_id:", source_id)
+                        source_id = int(source_id)
                         if source_id in source_mapping:
+                            print("source_mapping[source_id]:", source_mapping[source_id])
                             enriched_sources.append(source_mapping[source_id])
                     
                     # Replace source IDs with enriched sources
-                    json_response['sources'] = enriched_sources
+                    parsed_json['sources'] = enriched_sources
                     
-                    # Add to processed chunks
-                    processed_chunks.append(json.dumps(json_response))
+                    # Add to enriched chunks
+                    enriched_chunks.append(json.dumps(parsed_json))
+                    print("current enriched chunks:", enriched_chunks)
                     
-                except json.JSONDecodeError:
-                    # Handle non-JSON chunks
-                    processed_chunks.append(json.dumps({
-                        'type': 'text',
-                        'content': chunk
-                    }))
-        else:
-            # For text mode
-            for chunk in all_chunks:
-                if stream_mode == StreamMode.TEXT:
-                    processed_chunks.append(json.dumps({
-                        'type': 'text',
-                        'content': chunk
-                    }))
-                else:
-                    processed_chunks.append(chunk)
-        
-        # Store final message in chat history
-        final_message = "[Streamed response]"
-        if response_data['type'] == 'medical_question':
-            final_message = "[Evidence-based answer with sources]"
-        elif response_data['type'] == 'general_question':
-            final_message = "[Response to general question]"
-        
-        chat_history.store_message(
-            consultation_id=consultation_id,
-            sender="ai",
-            message=final_message,
-            section=response_data['current_section']
-        )
+                except Exception as e:
+                    print("Error performing rag:", e)
+                    # Just pass through any non-JSON chunks
+                    enriched_chunks.append(chunk)
+            
+            # Use the enriched chunks
+            processed_chunks = enriched_chunks
         
         # Create streaming response
         def generate():
@@ -385,14 +375,13 @@ def chat():
             
             # Send all processed chunks
             for chunk in processed_chunks:
+                print("sending chunk:", chunk)
                 yield f"data: {chunk}\n\n"
             
             # Final message
             yield f"data: {{'type': 'end'}}\n\n"
         
         return Response(stream_with_context(generate()), mimetype='text/event-stream')
-
-    # Fallback
     return jsonify(response_data)
 
 @app.route('/api/summary', methods=['GET'])

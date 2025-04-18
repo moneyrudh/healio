@@ -66,6 +66,7 @@ class VectorSearch:
                     "id": source_id,
                     "title": result.get('title', 'Unknown Source'),
                     "article_id": result.get('article_id', 'N/A'),
+                    "authors": result.get('authors', []),
                     "similarity": result.get('similarity', 0),
                     "chunks": []
                 }

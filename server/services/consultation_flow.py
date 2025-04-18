@@ -97,9 +97,9 @@ class ConsultationFlow:
             "sources": ["source_id_1", "source_id_2"]
         }
         
-        Include only the source IDs you actually use in your answer.
+        Include only the source IDs (the "id" field from the chunks and NOT the "article_id" field) you actually use in your answer.
         Limit to 3 sources maximum.
-        After each complete JSON object, include the delimiter '\u001e\n'.
+        After each complete JSON object, include the string literal "//U001E//N".
         """
         
         # Extract source IDs for reference

@@ -5,7 +5,8 @@ import {
     ConsultationSession, 
     ChatMessage, 
     ConsultationSummary,
-    NewPatientFormData
+    NewPatientFormData,
+    MedicalSource
   } from './types';
   
   const API_BASE_URL = process.env.HEALIO_SERVER_URL || 'http://localhost:5001';

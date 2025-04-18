@@ -15,65 +15,88 @@ const formatTime = (timestamp: string) => {
 };
 
 // Individual chat message component
-interface MessageProps {
-  message: ChatMessage;
-}
+// components/chat/index.tsx - Updated Message component
 
-export const Message: React.FC<MessageProps> = ({ message }) => {
-  const isAI = message.sender === 'ai';
+// components/chat/index.tsx - Updated Message component
+
+interface MessageProps {
+    message: ChatMessage;
+  }
   
-  // Handle medical sources if present (for DOUBTS section)
-  const sources = (message as any).sources as MedicalSource[] | undefined;
-  
-  return (
-    <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-4`}>
-      <div className={`max-w-[80%] ${isAI ? 'order-2' : 'order-1'}`}>
-        {/* Message bubble */}
-        <div 
-          className={`
-            rounded-2xl p-4 shadow-sm
-            ${isAI 
-              ? 'bg-primary-50 dark:bg-primary-900/30 rounded-tl-none' 
-              : 'bg-white dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
-            }
-          `}
-        >
-          <div className="whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
-            {message.message}
+  export const Message: React.FC<MessageProps> = ({ message }) => {
+    const isAI = message.sender === 'ai';
+    
+    // Extract message content and sources directly from the message object
+    const getMessageData = () => {
+      return {
+        content: message.message.content || '',
+        sources: message.message.type == "rag" ? message.message.sources : [],
+        type: message.message.type || 'text'
+      };
+    };
+    
+    const { content, sources, type } = getMessageData();
+    
+    return (
+      <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-4`}>
+        <div className={`max-w-[80%] ${isAI ? 'order-2' : 'order-1'}`}>
+          {/* Message bubble */}
+          <div 
+            className={`
+              rounded-2xl p-4 shadow-sm
+              ${isAI 
+                ? 'bg-primary-50 dark:bg-primary-900/30 rounded-tl-none' 
+                : 'bg-white dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
+              }
+            `}
+          >
+            <div className="whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
+              {content}
+            </div>
+            
+            {/* Sources citation section - only for RAG type messages */}
+            {type === 'rag' && sources && sources.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
+                <h4 className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
+                  Sources:
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {sources.map((source: MedicalSource, index: number) => (
+                    <div 
+                      key={index}
+                      className="group relative"
+                    >
+                      <span className="px-2 py-1 bg-primary-100 dark:bg-primary-800 rounded text-xs font-medium cursor-help">
+                        {index + 1}
+                      </span>
+                      
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-white dark:bg-neutral-700 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <p className="font-medium text-sm mb-1">{source.title}</p>
+                        {source.authors && source.authors.length > 0 && (
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {source.authors.join(', ')}
+                          </p>
+                        )}
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                          PMCID: {source.pmcid || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           
-          {/* Sources citation section - only for DOUBTS section */}
-          {sources && sources.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
-              <h4 className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
-                Sources:
-              </h4>
-              <div className="space-y-2">
-                {sources.map((source, index) => (
-                  <div 
-                    key={index} 
-                    className="text-xs p-2 bg-white dark:bg-neutral-800/50 rounded border border-neutral-200 dark:border-neutral-700"
-                  >
-                    <p className="font-medium">{source.title}</p>
-                    <p className="text-neutral-500 dark:text-neutral-400">
-                      PMCID: {source.pmcid}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Message timestamp */}
-        <div className={`mt-1 text-xs text-neutral-500 ${isAI ? 'text-left' : 'text-right'}`}>
-          {formatTime(message.timestamp)}
+          {/* Message timestamp */}
+          <div className={`mt-1 text-xs text-neutral-500 ${isAI ? 'text-left' : 'text-right'}`}>
+            {formatTime(message.timestamp)}
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
-
+    );
+  };
 // Chat input component
 interface ChatInputProps {
   onSendMessage: (message: string) => void;

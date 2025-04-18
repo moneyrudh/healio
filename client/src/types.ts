@@ -45,10 +45,40 @@ export interface Provider {
     id: string;
     consultation_session_id: string;
     sender: 'provider' | 'ai';
-    message: string;
+    message: MessageContent;
     section: ConsultationSection | string;
     timestamp: string;
     created_at: string;
+  }
+  
+  // Message content types
+  export type MessageContent = TextMessage | RagMessage;
+  
+  export interface TextMessage {
+    type: 'text';
+    content: string;
+  }
+  
+  export interface RagMessage {
+    type: 'rag';
+    content: string;
+    sources: MedicalSource[];
+  }
+  
+  export interface MedicalSource {
+    id: string;
+    pmcid: string;
+    title: string;
+    authors: string[];
+  }
+
+  export interface AIResponse {
+    type: 'start' | 'text' | 'rag' | 'end' | 'section_transition' | 'follow_up';
+    content?: string;
+    message?: string;
+    previous_section?: ConsultationSection | string;
+    current_section?: ConsultationSection | string;
+    sources?: MedicalSource[];
   }
   
   export interface SectionData {

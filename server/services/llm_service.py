@@ -338,31 +338,36 @@ class LLMService:
         # Get the format for this section
         section_format = SECTION_FORMATS.get(section_enum, SectionFormat.PARAGRAPH)
         
-        # Prepare messages for LLM
+        # Prepare messages for LLM - message is always in JSON format
         conversation = []
         for msg in messages:
+            # Extract content from the message
+            content = msg['message']['content']
+                
+            # Add to conversation
             if msg['sender'] == 'provider':
-                conversation.append(f"Doctor: {msg['message']}")
+                conversation.append(f"Doctor: {content}")
             else:
-                conversation.append(f"AI: {msg['message']}")
+                conversation.append(f"AI: {content}")
         
         conversation_text = "\n".join(conversation)
         
+        # Rest of the function remains unchanged
         # Create prompt based on the section format
         if section_format == SectionFormat.NUMBERED_BULLET:
             system_prompt = (f"You are a medical AI assistant that helps organize medical consultation notes. "
-                           f"Based on the conversation about the {section} section, create a numbered list of key points. "
-                           f"Return ONLY a JSON with the format: {{\"format\": \"numbered_bullet\", \"items\": [\"point 1\", \"point 2\", ...]}}")
-                           
+                        f"Based on the conversation about the {section} section, create a numbered list of key points. "
+                        f"Return ONLY a JSON with the format: {{\"format\": \"numbered_bullet\", \"items\": [\"point 1\", \"point 2\", ...]}}")
+                        
         elif section_format == SectionFormat.BULLET:
             system_prompt = (f"You are a medical AI assistant that helps organize medical consultation notes. "
-                           f"Based on the conversation about the {section} section, create a bulleted list of key points. "
-                           f"Return ONLY a JSON with the format: {{\"format\": \"bullet\", \"items\": [\"point 1\", \"point 2\", ...]}}")
-                           
+                        f"Based on the conversation about the {section} section, create a bulleted list of key points. "
+                        f"Return ONLY a JSON with the format: {{\"format\": \"bullet\", \"items\": [\"point 1\", \"point 2\", ...]}}")
+                        
         else:  # PARAGRAPH
             system_prompt = (f"You are a medical AI assistant that helps organize medical consultation notes. "
-                           f"Based on the conversation about the {section} section, create a concise paragraph summary. "
-                           f"Return ONLY a JSON with the format: {{\"format\": \"paragraph\", \"content\": \"Your paragraph text here\"}}")
+                        f"Based on the conversation about the {section} section, create a concise paragraph summary. "
+                        f"Return ONLY a JSON with the format: {{\"format\": \"paragraph\", \"content\": \"Your paragraph text here\"}}")
         
         # Create prompt for LLM
         prompt = f"Here is the conversation about the {section} section:\n\n{conversation_text}\n\nPlease summarize this information according to the required format."
