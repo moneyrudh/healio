@@ -26,13 +26,18 @@ class ChatHistoryManager:
         if sender not in ['provider', 'ai']:
             raise ValueError("Sender must be either 'provider' or 'ai'")
         
+        section_value = section.value if hasattr(section, 'value') else section
+        print("sender:", sender)
+        print("message:", message)
+        print("section_value:", section_value)
+    
         # Create message record
         message_data = {
             "id": str(uuid.uuid4()),
             "consultation_session_id": consultation_id,
             "sender": sender,
             "message": message,
-            "section": section,
+            "section": section_value,
             "timestamp": datetime.datetime.utcnow().isoformat(),
             "created_at": datetime.datetime.utcnow().isoformat()
         }

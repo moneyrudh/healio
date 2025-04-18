@@ -6,7 +6,7 @@ class ProviderManager:
     """Manages provider data from JSON configuration"""
     
     def __init__(self):
-        self.providers_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'providers.json')
+        self.providers_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'db/providers.json')
         self._providers = None
     
     def _load_providers(self):

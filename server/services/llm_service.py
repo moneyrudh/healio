@@ -102,6 +102,95 @@ class LLMService:
         
         except Exception as e:
             yield str({"error": str(e)})
+
+    async def get_stream_response(self, prompt, mode=StreamMode.TEXT, system_message=None):
+        """
+        Get all chunks from a streaming response as a list instead of streaming them
+        
+        Args:
+            prompt: The user prompt text
+            mode: The stream mode (text or JSON)
+            system_message: Optional system message to guide LLM behavior
+            
+        Returns:
+            List of all response chunks
+        """
+        chunks = []
+        
+        # Set up messages
+        messages = []
+        
+        # Add system message if provided
+        if system_message:
+            messages.append({"role": "system", "content": system_message})
+        
+        # Add prompt
+        messages.append({"role": "user", "content": prompt})
+        
+        # Different formatting based on mode
+        if mode == StreamMode.JSON:
+            if not system_message:
+                messages.insert(0, {
+                    "role": "system", 
+                    "content": "You are a medical AI assistant that responds in JSON format. "
+                    "Your responses must always be valid JSON objects. "
+                    "All text content should be contained within JSON fields, never outside the JSON structure. "
+                    "After each complete JSON object (including the last one), include the exact string literal '//U001E//N' to indicate the end of the object. "
+                    "Limit your response to a maximum of 3 JSON objects."
+                })
+        
+        # Create stream
+        try:
+            stream = self.openai.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                stream=True
+            )
+            
+            # Process stream based on mode
+            if mode == StreamMode.TEXT:
+                # Simple text streaming
+                async for chunk in stream:
+                    if hasattr(chunk.choices[0].delta, 'content') and chunk.choices[0].delta.content:
+                        chunks.append(chunk.choices[0].delta.content)
+            
+            elif mode == StreamMode.JSON:
+                # JSON streaming with special handling
+                json_buffer = ""
+                delimiter = "//U001E//N"
+                
+                for chunk in stream:
+                    if hasattr(chunk.choices[0].delta, 'content') and chunk.choices[0].delta.content:
+                        content = chunk.choices[0].delta.content
+                        json_buffer += content
+                        
+                        # Check for delimiter
+                        if delimiter in json_buffer:
+                            parts = json_buffer.split(delimiter)
+                            for i in range(len(parts) - 1):  # All complete parts
+                                try:
+                                    # Parse complete JSON object
+                                    parsed_json = json.loads(parts[i])
+                                    chunks.append(json.dumps(parsed_json))
+                                except json.JSONDecodeError:
+                                    # Skip malformed JSON
+                                    continue
+                            
+                            # Keep any incomplete part
+                            json_buffer = parts[-1]
+                
+                # Handle any remaining buffer content
+                if json_buffer:
+                    try:
+                        parsed_json = json.loads(json_buffer)
+                        chunks.append(json.dumps(parsed_json))
+                    except json.JSONDecodeError:
+                        # If we still can't parse, just send the raw buffer
+                        chunks.append(json_buffer)
+            
+            return chunks
+        except Exception as e:
+            return [str({"error": str(e)})]
     
     def get_section_prompt(self, section):
         """
