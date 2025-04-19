@@ -149,6 +149,32 @@ class ConsultationFlow:
             raise ValueError(f"Consultation not found: {consultation_id}")
             
         current_section = consultation["current_section"]
+
+        if current_section == ConsultationSection.COMPLETE.value or current_section == "complete":
+            # Still store the doctor's message
+            self.chat_history.store_message(
+                consultation_id=consultation_id,
+                sender="provider",
+                message=user_message,
+                section=current_section
+            )
+            
+            # Return a completion message
+            completion_message = "The consultation session is complete. You can now view and download the summary report."
+            
+            # Store AI response
+            self.chat_history.store_message(
+                consultation_id=consultation_id,
+                sender="ai",
+                message=completion_message,
+                section=current_section
+            )
+            
+            return {
+                "type": "completion_acknowledgment",
+                "message": completion_message,
+                "current_section": current_section
+            }
         
         # Store the doctor's message
         self.chat_history.store_message(
@@ -232,8 +258,10 @@ class ConsultationFlow:
             ai_message = "Is there anything specific you'd like to know about this case? Or would you like to move to the next section?"
         else:
             # AI-generated follow-up question
-            ai_message = "Is there anything else you'd like to add to this section?"
-        
+            ai_message = self.llm_service.generate_followup_question(
+                current_section, 
+                user_message  # Pass the doctor's current message for context
+            )
         # Store AI response
         self.chat_history.store_message(
             consultation_id=consultation_id,

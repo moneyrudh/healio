@@ -262,11 +262,20 @@ class LLMService:
         system_message = """
         You are an AI medical assistant helping guide a doctor through a patient consultation.
         Your task is to classify the doctor's response to determine the next action.
+        
         Respond ONLY with one of these classifications:
         - SECTION_COMPLETE: The doctor has finished providing information for this section
         - NEEDS_FOLLOWUP: The doctor has provided information but might have more to add
         - MEDICAL_QUESTION: The doctor has asked a medical question that requires evidence-based answering
         - GENERAL_QUESTION: The doctor has asked a general question that doesn't require research
+        
+        IMPORTANT GUIDELINES:
+        1. Any short negative responses like "no", "nope", "done", "finished", "that's all", "nothing else", 
+        or similar brief responses MUST be classified as SECTION_COMPLETE.
+        2. When the doctor responds negatively to questions about adding more information, ALWAYS classify as SECTION_COMPLETE.
+        3. Only classify as NEEDS_FOLLOWUP if the doctor has clearly provided information that might be incomplete.
+        4. Be conservative about automatically moving to the next section - always ask for confirmation unless the response
+        is a very clear indication that the section is complete.
         """
         
         # Create prompt with context
@@ -404,3 +413,42 @@ class LLMService:
                 items = [line.strip().lstrip('*-0123456789.').strip() for line in lines if line.strip()]
                 format_type = "numbered_bullet" if section_format == SectionFormat.NUMBERED_BULLET else "bullet"
                 return {"format": format_type, "items": items}
+            
+    def generate_followup_question(self, section, previous_message=None):
+        """
+        Generate a contextual follow-up question for the current section
+        
+        Args:
+            section: The current consultation section
+            previous_message: Optional doctor's most recent message for context
+            
+        Returns:
+            AI-generated follow-up question
+        """
+        # Create system message for follow-up generation
+        section_key = section.value if hasattr(section, 'value') else section
+        
+        system_message = """
+        You are an AI medical assistant helping guide a doctor through a patient consultation.
+        Generate a natural, professional follow-up question for the current section.
+        Your question should:
+        1. Ask if the doctor wants to add more information to this section
+        2. Make it clear that saying "no" or similar will move to the next section
+        3. Be conversational and brief (1-2 sentences maximum)
+        """
+        
+        # Create the user prompt with context if available
+        context = f"\nDoctor's most recent input: \"{previous_message}\"" if previous_message else ""
+        user_prompt = f"Generate a follow-up question for the '{section_key}' section of a medical consultation.{context}"
+        
+        # Get response
+        response = self.openai.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_prompt}
+            ]
+        )
+        
+        # Extract and return the question
+        return response.choices[0].message.content.strip()
