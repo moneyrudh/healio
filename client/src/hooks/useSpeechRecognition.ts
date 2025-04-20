@@ -1,5 +1,5 @@
 // hooks/useSpeechRecognition.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 // Define the SpeechRecognition interface
 interface SpeechRecognitionEvent extends Event {
@@ -68,14 +68,16 @@ declare global {
   }
 }
 
-// This is a placeholder for the full implementation
-// We will implement the complete functionality later as per requirements
 export const useSpeechRecognition = (): SpeechRecognitionHook => {
   const [transcript, setTranscript] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSupported, setIsSupported] = useState(false);
-
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const cumulativeTranscriptRef = useRef('');
+  // Add a separate ref to track manual stop state
+  const isManualStopRef = useRef(false);
+  
   // Check if browser supports the Web Speech API
   useEffect(() => {
     // Check if the Web Speech API is available
@@ -89,11 +91,6 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
 
   // Start listening function
   const startListening = useCallback(() => {
-    // This is a placeholder - full implementation will come later
-    setError('Speech recognition is not yet implemented.');
-    
-    // Uncomment and implement when ready
-    /*
     if (!isSupported) {
       setError('Speech recognition is not supported in this browser.');
       return;
@@ -107,7 +104,12 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
         return;
       }
       
+      // Create a new instance each time to avoid issues with reusing instances
       const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+
+      // Reset the manual stop flag when starting new recognition
+      isManualStopRef.current = false;
 
       recognition.continuous = true;
       recognition.interimResults = true;
@@ -116,12 +118,27 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
       recognition.onstart = () => {
         setIsListening(true);
         setError(null);
+        // Don't clear transcript when starting - keep previous content
+        // Use the current transcript as the starting point
+        cumulativeTranscriptRef.current = transcript;
       };
 
       recognition.onresult = (event) => {
+        // Get the current speech segment
         const lastResult = event.results[event.results.length - 1];
-        const transcriptText = lastResult[0].transcript;
-        setTranscript(transcriptText);
+        const currentSpeechSegment = lastResult[0].transcript;
+        
+        // Combine with previous transcript to maintain continuity
+        const updatedTranscript = cumulativeTranscriptRef.current + ' ' + currentSpeechSegment;
+        
+        // Update transcript state
+        setTranscript(updatedTranscript.trim());
+        
+        // If this is a final result (user paused speaking)
+        if (lastResult.isFinal) {
+          // Update the cumulative reference for next segments
+          cumulativeTranscriptRef.current = updatedTranscript.trim();
+        }
       };
 
       recognition.onerror = (event) => {
@@ -131,39 +148,53 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
 
       recognition.onend = () => {
         setIsListening(false);
+        // Only restart if this wasn't a manual stop
+        if (recognitionRef.current && !isManualStopRef.current) {
+          try {
+            recognition.start();
+          } catch (e) {
+            // Ignore errors when restarting
+          }
+        }
       };
 
       recognition.start();
     } catch (err) {
-      setError(`Failed to start speech recognition: ${err}`);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Failed to start speech recognition: ${errorMessage}`);
       setIsListening(false);
     }
-    */
-  }, [isSupported]);
+  }, [isSupported, transcript]);
 
   // Stop listening function
   const stopListening = useCallback(() => {
-    // This is a placeholder - full implementation will come later
-    setIsListening(false);
-    
-    // Uncomment and implement when ready
-    /*
-    if (!isSupported) return;
+    if (!isSupported || !recognitionRef.current) return;
 
     try {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        return;
-      }
+      // Store the final transcript reference to preserve for next start
+      cumulativeTranscriptRef.current = transcript;
       
-      const recognition = new SpeechRecognition();
-      recognition.stop();
-      setIsListening(false);
+      // Set the manual stop flag to prevent auto-restart
+      isManualStopRef.current = true;
+      
+      // Properly clean up and stop the recognition
+      recognitionRef.current.stop();
+      
+      // We don't set isListening to false here because the onend event will do that
     } catch (err) {
-      setError(`Failed to stop speech recognition: ${err}`);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Failed to stop speech recognition: ${errorMessage}`);
     }
-    */
-  }, [isSupported]);
+  }, [isSupported, transcript]);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current && isListening) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [isListening]);
 
   return {
     transcript,

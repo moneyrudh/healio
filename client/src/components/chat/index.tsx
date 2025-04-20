@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { PaperAirplaneIcon, MicrophoneIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { Button, Spinner } from '../shared';
 import { ChatMessage, MedicalSource, ConsultationSection, TextMessage, RagMessage, MessageContent } from '../../types';
+import useSpeechRecognition from '../../hooks/useSpeechRecognition';
 
 // Helper to format timestamp
 const formatTime = (timestamp: string) => {
@@ -125,6 +126,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
     const [message, setMessage] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const { transcript, isListening, startListening, stopListening, error, isSupported } = useSpeechRecognition();
 
     // Auto-resize textarea as content grows
     useEffect(() => {
@@ -134,10 +136,29 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         }
     }, [message]);
 
+    // Update message with transcript when it changes
+    useEffect(() => {
+        if (transcript && isListening) {
+            // Set the message to the complete transcript which now includes previous content
+            setMessage(transcript);
+            
+            // Auto-resize the textarea for the new content
+            if (textareaRef.current) {
+                textareaRef.current.style.height = 'auto';
+                textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+            }
+        }
+    }, [transcript, isListening]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!message.trim() || isLoading || disabled) return;
+
+        // If we're listening, stop before sending
+        if (isListening) {
+            stopListening();
+        }
 
         onSendMessage(message);
         setMessage('');
@@ -152,6 +173,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             handleSubmit(e);
+        }
+    };
+
+    // Toggle speech recognition
+    const toggleSpeechRecognition = () => {
+        if (isListening) {
+            stopListening();
+        } else {
+            // When starting speech recognition, pass the current message to the hook
+            // by ensuring the transcript state is set to current message
+            if (message) {
+                // We don't actually need to do anything here since our updated hook
+                // now preserves previous content automatically
+            }
+            startListening();
         }
     };
 
@@ -179,7 +215,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             placeholder={
                                 disabled
                                     ? "Input disabled"
-                                    : "Type your message..."
+                                    : isListening 
+                                      ? "Listening..."
+                                      : "Type your message..."
                             }
                             disabled={disabled || isLoading}
                             className="w-full py-3 px-4 focus:outline-none resize-none min-h-[56px] max-h-[150px] bg-transparent text-neutral-800 dark:text-white"
@@ -187,12 +225,27 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         />
 
                         <div className="p-2 flex">
-                            {/* Microphone button (placeholder for now) - will implement speech to text later */}
+                            {/* Microphone button */}
                             <button
                                 type="button"
-                                disabled={true} // Disabled as per requirements to implement later
-                                className="rounded-full p-2 text-neutral-400 bg-neutral-100 dark:bg-neutral-700 mr-1 opacity-50 cursor-not-allowed"
-                                title="Speech input will be implemented later"
+                                disabled={!isSupported || disabled || isLoading}
+                                onClick={toggleSpeechRecognition}
+                                className={`
+                                    rounded-full p-2 transition-colors
+                                    ${!isSupported || disabled || isLoading
+                                        ? 'text-neutral-400 bg-neutral-100 dark:bg-neutral-700 opacity-50 cursor-not-allowed' 
+                                        : isListening
+                                          ? 'text-red-500 bg-red-100 dark:bg-red-900/30 animate-pulse' 
+                                          : 'text-primary-500 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-800/50'
+                                    }
+                                `}
+                                title={
+                                    !isSupported 
+                                        ? "Speech recognition not supported in this browser" 
+                                        : isListening 
+                                          ? "Stop recording" 
+                                          : "Start voice input"
+                                }
                             >
                                 <MicrophoneIcon className="h-5 w-5" />
                             </button>
@@ -202,13 +255,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                 type="submit"
                                 disabled={!message.trim() || isLoading || disabled}
                                 className={`
-                  rounded-full p-2 
-                  ${message.trim() && !isLoading && !disabled
+                                    rounded-full p-2 ml-1
+                                    ${message.trim() && !isLoading && !disabled
                                         ? 'bg-primary-500 text-white hover:bg-primary-600'
                                         : 'bg-neutral-200 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400 cursor-not-allowed'
                                     }
-                  transition-colors
-                `}
+                                    transition-colors
+                                `}
                             >
                                 {isLoading ? (
                                     <Spinner size="sm" />
@@ -219,9 +272,27 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         </div>
                     </div>
 
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 text-right">
-                        Press Ctrl+Enter to send
-                    </p>
+                    {/* Status indicators */}
+                    <div className="flex justify-between mt-1">
+                        {/* Speech status */}
+                        <div>
+                            {isListening && (
+                                <p className="text-xs text-primary-500 dark:text-primary-400 animate-pulse">
+                                    Listening...
+                                </p>
+                            )}
+                            {error && (
+                                <p className="text-xs text-red-500 dark:text-red-400">
+                                    {error}
+                                </p>
+                            )}
+                        </div>
+                        
+                        {/* Shortcuts hint */}
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 text-right">
+                            Press Ctrl+Enter to send
+                        </p>
+                    </div>
                 </>
             )}
         </form>
