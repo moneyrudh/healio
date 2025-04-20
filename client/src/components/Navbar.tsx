@@ -42,7 +42,24 @@ const Navbar: React.FC = () => {
     >
       <div className="container-custom py-5">
         <div className="flex items-center justify-between">
-          <motion.div 
+        <motion.div 
+  variants={linkVariants}
+  className="flex items-center"
+>
+  <Link to="/" className="flex items-center group">
+    <motion.img 
+      src="/healio.png" 
+      alt="Healio Logo"
+      className="h-10 w-auto mr-4 rounded-lg" // Added rounded-lg to maintain similar appearance
+      whileHover={{ rotate: 5, scale: 1.05 }}
+      transition={{ duration: 0.3 }}
+    />
+    <span className="text-xl md:text-2xl lg:text-3xl font-light tracking-tighter text-[#ae8f73] dark:text-[#dabb83]">
+      healio
+    </span>
+  </Link>
+</motion.div>
+          {/* <motion.div 
             variants={linkVariants}
             className="flex items-center"
           >
@@ -65,7 +82,7 @@ const Navbar: React.FC = () => {
                 healio
               </span>
             </Link>
-          </motion.div>
+          </motion.div> */}
 
           <div className="flex items-center space-x-2 md:space-x-8">
             {[

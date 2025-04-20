@@ -309,11 +309,11 @@ const ModernLandingPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-800 flex items-center justify-center flex-shrink-0">
-                      <ChatBubbleLeftRightIcon className="h-6 w-6 text-primary-500" />
+                    <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-primary-800 flex items-center justify-center flex-shrink-0">
+                      <ChatBubbleLeftRightIcon className="h-6 w-6 text-neutral-500 dark:text-primary-500" />
                     </div>
-                    <div className="ml-4 bg-primary-50 dark:bg-primary-900/30 p-4 rounded-2xl rounded-tl-none">
-                      <p className="text-neutral-800 dark:text-neutral-200">What is the chief complaint of the patient?</p>
+                    <div className="ml-4 bg-neutral-200 dark:bg-primary-900/30 p-4 rounded-2xl rounded-tl-none">
+                      <p className="text-neutral-800 dark:text-neutral-200 font-light">What is the chief complaint of the patient?</p>
                     </div>
                   </motion.div>
                   
@@ -323,11 +323,11 @@ const ModernLandingPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.0 }}
                   >
-                    <div className="mr-4 bg-neutral-100 dark:bg-neutral-700 p-4 rounded-2xl rounded-tr-none">
-                      <p className="text-neutral-800 dark:text-neutral-200">Patient presents with acute lower back pain that started 3 days ago after lifting heavy furniture.</p>
+                    <div className="mr-4 bg-primary-500 dark:bg-neutral-700 p-4 rounded-2xl rounded-tr-none">
+                      <p className="text-white dark:text-neutral-200 font-light">Patient presents with acute lower back pain that started 3 days ago after lifting heavy furniture.</p>
                     </div>
-                    <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-neutral-600 flex items-center justify-center flex-shrink-0">
-                      <span className="font-medium text-neutral-700 dark:text-neutral-300">MD</span>
+                    <div className="h-10 w-10 rounded-full bg-primary-200 dark:bg-neutral-600 flex items-center justify-center flex-shrink-0">
+                      <span className="font-medium text-primary-700 dark:text-neutral-300">MD</span>
                     </div>
                   </motion.div>
                   
@@ -337,11 +337,11 @@ const ModernLandingPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.5 }}
                   >
-                    <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-800 flex items-center justify-center flex-shrink-0">
-                      <ChatBubbleLeftRightIcon className="h-6 w-6 text-primary-500" />
+                    <div className="h-10 w-10 rounded-full bg-neutral-200 dark:bg-primary-800 flex items-center justify-center flex-shrink-0">
+                      <ChatBubbleLeftRightIcon className="h-6 w-6 text-neutral-500 dark:text-primary-500" />
                     </div>
-                    <div className="ml-4 bg-primary-50 dark:bg-primary-900/30 p-4 rounded-2xl rounded-tl-none">
-                      <p className="text-neutral-800 dark:text-neutral-200">Thank you. Any associated symptoms like numbness or tingling?</p>
+                    <div className="ml-4 bg-neutral-200 dark:bg-primary-900/30 p-4 rounded-2xl rounded-tl-none">
+                      <p className="text-neutral-800 dark:text-neutral-200 font-light">Thank you. Any associated symptoms like numbness or tingling?</p>
                     </div>
                   </motion.div>
                 </div>
