@@ -127,9 +127,9 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-md max-w-4xl mx-auto my-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-md max-w-4xl mx-auto">
       {/* Header with download button */}
-      <div className="bg-primary-50 dark:bg-primary-900/30 px-8 py-6 rounded-t-xl border-b border-primary-100 dark:border-primary-800 flex justify-between items-center">
+      <div className="bg-primary-50 dark:bg-primary-900/30 px-8 py-6 border-b border-primary-100 dark:border-primary-800 flex justify-between items-center">
         <h2 className="text-2xl font-light text-primary-800 dark:text-primary-200">
           Medical Record
         </h2>

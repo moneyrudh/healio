@@ -506,7 +506,7 @@ def generate_pdf():
             summary_data = summary['summary_data']
         
         # Add provider info to patient data
-        patient['provider'] = consultation.get('provider_id', 'Unknown Provider')
+        patient['provider'] = provider_manager.get_provider_by_id(consultation.get('provider_id', 'Unknown Provider'))
         
         # Generate PDF
         pdf_content = document_generator.generate_pdf(summary_data, patient)

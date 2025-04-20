@@ -100,7 +100,7 @@ const Navbar: React.FC = () => {
             <motion.div variants={linkVariants}>
               <motion.button
                 onClick={toggleDarkMode}
-                className="p-3 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors"
+                className="p-3 rounded-full bg-none dark:bg-none text-neutral-600 dark:text-neutral-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors"
                 aria-label="Toggle dark mode"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}

@@ -244,7 +244,7 @@ export const MessageList: React.FC<MessageListProps> = ({
     }, [messages]);
 
     return (
-        <div className="flex-1 overflow-y-auto py-4 px-2">
+        <div className="flex-1 overflow-y-auto py-4 px-4">
             <div className="space-y-6">
                 {messages.map((message, index) => (
                     <Message key={`${message.id || index}`} message_props={message} />

@@ -79,7 +79,7 @@ class DocumentGenerator:
         date = datetime.now().strftime('%B %d, %Y')
         dob = patient_data.get('dob', '[DOB]')
         mrn = patient_data.get('medical_record_number', '[MRN]')
-        provider = patient_data.get('provider', '[PROVIDER]')
+        provider = patient_data.get('provider').get('name', '[PROVIDER]')
         
         # Replace patient header placeholders
         template = template.replace('[PATIENT_NAME]', self._escape_latex(patient_name))

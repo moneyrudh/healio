@@ -153,7 +153,7 @@ export const TabToggle: React.FC<TabProps> = ({
   className = '' 
 }) => {
   return (
-    <div className={`flex border border-neutral-200 dark:border-neutral-700 rounded-full overflow-hidden ${className}`}>
+    <div className={`flex border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden ${className}`}>
       {tabs.map((tab) => (
         <button
           key={tab.key}
