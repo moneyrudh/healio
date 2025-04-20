@@ -305,11 +305,11 @@ const HistoryPage: React.FC = () => {
     }, [isFilterOpen]);
 
     return (
-        <div className="container-custom py-20 lg:py-28">
+        <div className="container-custom py-28">
             {/* Page header */}
             <div className="mb-8">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                    <h1 className="text-4xl font-extralight tracking-tight text-neutral-900 dark:text-white mb-4 md:mb-0">
+                <div className="flex flex-row items-center justify-between mb-6">
+                    <h1 className="text-xl md:text-2xl lg:text-4xl font-extralight tracking-tight text-neutral-900 dark:text-white mb-4 md:mb-0">
                         Patient History
                     </h1>
 
@@ -381,7 +381,7 @@ const HistoryPage: React.FC = () => {
                     {sortedDates.map(dateKey => (
                         <div key={dateKey} className="relative">
                             {/* Date heading */}
-                            <div className="sticky top-0 bg-neutral-50 dark:bg-neutral-900 py-2 mb-4 border-b border-neutral-200 dark:border-neutral-700">
+                            <div className="sticky top-0 bg-neutral-50 dark:bg-neutral-900 p-2 mb-4 border-b border-neutral-200 dark:border-neutral-700">
                                 <h2 className="text-xl font-light text-neutral-700 dark:text-neutral-300 flex items-center">
                                     <CalendarIcon className="h-5 w-5 mr-2 text-neutral-500 dark:text-neutral-400" />
                                     {formatDate(dateKey)}

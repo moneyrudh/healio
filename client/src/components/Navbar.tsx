@@ -67,7 +67,7 @@ const Navbar: React.FC = () => {
             </Link>
           </motion.div>
 
-          <div className="flex items-center space-x-8">
+          <div className="flex items-center space-x-2 md:space-x-8">
             {[
               { path: '/chat', label: 'Start Consultation' },
               { path: '/history', label: 'Patient History' }
@@ -81,7 +81,7 @@ const Navbar: React.FC = () => {
               >
                 <Link
                   to={link.path}
-                  className="relative text-lg font-light text-neutral-600 dark:text-neutral-300 hover:text-primary-500 dark:hover:text-primary-500 transition-colors duration-300 py-2"
+                  className="relative text-md sm:text-lg font-light text-neutral-600 dark:text-neutral-300 hover:text-primary-500 dark:hover:text-primary-500 transition-colors duration-300 py-2"
                 >
                   {link.label}
                   <motion.span 

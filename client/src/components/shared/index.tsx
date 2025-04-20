@@ -158,8 +158,8 @@ export const TabToggle: React.FC<TabProps> = ({
                 <button
                     key={tab.key}
                     className={`
-              relative flex-1 px-6 py-3 text-sm font-medium transition-colors
-              ${activeTab === tab.key
+                        relative flex-1 px-6 py-3 text-md font-medium transition-colors
+                        ${activeTab === tab.key
                             ? 'text-primary-600 dark:text-primary-500'
                             : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50'
                         }
@@ -168,7 +168,7 @@ export const TabToggle: React.FC<TabProps> = ({
                 >
                     {tab.label}
                     {activeTab === tab.key && (
-                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 dark:bg-primary-500"></div>
+                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-500 dark:bg-primary-500"></div>
                     )}
                 </button>
             ))}
