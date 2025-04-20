@@ -39,12 +39,16 @@ export const Message: React.FC<MessageProps> = ({ message_props }) => {
                     className={`
                         rounded-2xl p-4 shadow-sm
                         ${isAI
-                            ? 'bg-primary-50 dark:bg-primary-900/30 rounded-tl-none'
-                            : 'bg-white dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
+                            ? 'bg-neutral-200 dark:bg-primary-900/30 rounded-tl-none'
+                            : 'bg-primary-500 dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
+                            // : 'bg-white dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
                         }
                     `}
                 >
-                    <div className="whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
+                    <div 
+                        className={`whitespace-pre-wrap ${ isAI ? "text-neutral-800 dark:text-white" : "text-white dark:text-neutral-200" }`}
+                        // className={`whitespace-pre-wrap ${ isAI ? "text-neutral-800 dark:text-white" : "text-neutral-800 dark:text-neutral-200" }`}
+                    >
                         {content}
                     </div>
 

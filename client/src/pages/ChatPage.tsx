@@ -238,7 +238,7 @@ const ChatPage: React.FC = () => {
                     </div>
 
                     {/* Tab content */}
-                    <div className="flex-1 bg-neutral-50 dark:bg-neutral-900/50 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden mb-10">
+                    <div className="flex-1 bg-white dark:bg-neutral-900 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-800 overflow-hidden mb-10">
                         {/* Conversation tab */}
                         {activeTab === 'conversation' && (
                             <ChatInterface
