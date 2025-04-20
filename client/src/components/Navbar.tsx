@@ -81,11 +81,11 @@ const Navbar: React.FC = () => {
               >
                 <Link
                   to={link.path}
-                  className="relative text-lg font-light text-neutral-600 dark:text-neutral-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors duration-300 py-2"
+                  className="relative text-lg font-light text-neutral-600 dark:text-neutral-300 hover:text-primary-500 dark:hover:text-primary-500 transition-colors duration-300 py-2"
                 >
                   {link.label}
                   <motion.span 
-                    className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-500 dark:bg-primary-400 rounded-full"
+                    className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-500 dark:bg-primary-500 rounded-full"
                     initial={{ scaleX: 0, opacity: 0 }}
                     animate={{ 
                       scaleX: hoveredLink === link.path ? 1 : 0,
