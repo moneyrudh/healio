@@ -57,11 +57,11 @@ const Navbar: React.FC = () => {
                 whileHover={{ rotate: 5, scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               >
-                <rect width="40" height="40" rx="8" fill="#00A0FF" />
+                <rect width="40" height="40" rx="8" fill={darkMode ? "#1a65d8" : "#00A0FF"} />
                 <path d="M12 14H28M12 20H28M12 26H20" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="28" cy="26" r="3" fill="white" />
               </motion.svg>
-              <span className="text-xl md:text-2xl lg:text-3xl font-extralight tracking-tighter text-primary-600 dark:text-primary-400">
+              <span className="text-xl md:text-2xl lg:text-3xl font-extralight tracking-tighter text-primary-600 dark:text-primary-500">
                 healio
               </span>
             </Link>

@@ -159,7 +159,7 @@ export const TabToggle: React.FC<TabProps> = ({
           key={tab.key}
           className={`flex-1 px-4 py-2 text-sm font-medium ${
             activeTab === tab.key
-              ? 'bg-primary-500 text-white'
+              ? 'bg-primary-500 dark:bg-primary-700 text-white dark:text-neutral-200'
               : 'bg-white text-neutral-700 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
           } transition-colors`}
           onClick={() => onChange(tab.key)}

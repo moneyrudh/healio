@@ -39,15 +39,13 @@ export const Message: React.FC<MessageProps> = ({ message_props }) => {
                     className={`
                         rounded-2xl p-4 shadow-sm
                         ${isAI
-                            ? 'bg-neutral-200 dark:bg-primary-900/30 rounded-tl-none'
-                            : 'bg-primary-500 dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
-                            // : 'bg-white dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
+                            ? 'bg-neutral-200 dark:bg-neutral-800 rounded-bl-none'
+                            : 'bg-primary-500 dark:bg-primary-700 rounded-br-none border border-neutral-200 dark:border-neutral-700'
                         }
                     `}
                 >
                     <div 
-                        className={`whitespace-pre-wrap ${ isAI ? "text-neutral-800 dark:text-white" : "text-white dark:text-neutral-200" }`}
-                        // className={`whitespace-pre-wrap ${ isAI ? "text-neutral-800 dark:text-white" : "text-neutral-800 dark:text-neutral-200" }`}
+                        className={`whitespace-pre-wrap ${ isAI ? "text-neutral-800 dark:text-neutral-200" : "text-white dark:text-neutral-200" }`}
                     >
                         {content}
                     </div>
@@ -70,7 +68,7 @@ export const Message: React.FC<MessageProps> = ({ message_props }) => {
                                             rel="noopener noreferrer"
                                             className="inline-block"
                                         >
-                                            <span className="inline-block px-2 py-1 bg-primary-100 dark:bg-primary-800 hover:bg-primary-200 dark:hover:bg-primary-700 rounded text-xs font-medium cursor-pointer transition-colors">
+                                            <span className="inline-block px-2 py-1 bg-white dark:bg-primary-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-primary-700 rounded text-xs font-medium cursor-pointer transition-colors">
                                                 {index + 1}
                                             </span>
                                         </a>
