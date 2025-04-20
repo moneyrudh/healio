@@ -24,7 +24,18 @@ import {
   // Providers API
   export const getProviders = async (): Promise<Provider[]> => {
     const response = await fetch(`${API_BASE_URL}/api/providers`);
-    return handleResponse(response);
+
+    let data = await response.json();
+    const providers: Provider[] = data.map((provider: Provider) => {
+        return {
+            id: provider.id,
+            name: provider.name,
+            specialty: provider.specialty,
+            photo: `/providers/${provider.id}.jpeg`
+        }
+    });
+    
+    return providers;
   };
   
   export const getProviderById = async (id: string): Promise<Provider> => {
