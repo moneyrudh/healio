@@ -34,15 +34,8 @@ class ChatHistoryManager:
         message_json = None
         
         # If message is already a dict, use it as is
-        if isinstance(message, dict) and 'type' in message:
+        if isinstance(message, dict):
             message_json = message
-        # If message_type is rag, include sources
-        elif message_type == "rag":
-            message_json = {
-                "type": "rag",
-                "content": message if isinstance(message, str) else "",
-                "sources": sources or []
-            }
         # Default to text type
         else:
             message_json = {

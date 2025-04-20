@@ -375,7 +375,13 @@ def chat():
             
             # Send all processed chunks
             for chunk in processed_chunks:
-                print("sending chunk:", chunk)
+                # print("sending chunk:", chunk)
+                chat_history.store_message(
+                    consultation_id=consultation_id,
+                    sender="ai",
+                    message=json.loads(chunk),
+                    section=response_data['current_section']
+                )
                 yield f"data: {chunk}\n\n"
             
             # Final message

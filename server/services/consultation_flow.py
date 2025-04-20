@@ -149,32 +149,6 @@ class ConsultationFlow:
             raise ValueError(f"Consultation not found: {consultation_id}")
             
         current_section = consultation["current_section"]
-
-        if current_section == ConsultationSection.COMPLETE.value or current_section == "complete":
-            # Still store the doctor's message
-            self.chat_history.store_message(
-                consultation_id=consultation_id,
-                sender="provider",
-                message=user_message,
-                section=current_section
-            )
-            
-            # Return a completion message
-            completion_message = "The consultation session is complete. You can now view and download the summary report."
-            
-            # Store AI response
-            self.chat_history.store_message(
-                consultation_id=consultation_id,
-                sender="ai",
-                message=completion_message,
-                section=current_section
-            )
-            
-            return {
-                "type": "completion_acknowledgment",
-                "message": completion_message,
-                "current_section": current_section
-            }
         
         # Store the doctor's message
         self.chat_history.store_message(
@@ -206,8 +180,12 @@ class ConsultationFlow:
             # Update consultation with new section
             self.consultation_manager.update_consultation_section(consultation_id, next_section)
             
-            # Generate prompt for next section
-            ai_message = self.llm_service.get_section_prompt(next_section)
+            if next_section.value == "complete":
+                self.complete_consultation(consultation_id)
+                ai_message = "The consultation session is complete. You can now view and download the summary report."
+            else:
+                # Generate prompt for next section (only for non-complete sections)
+                ai_message = self.llm_service.get_section_prompt(next_section)
             
             # Store AI response
             self.chat_history.store_message(

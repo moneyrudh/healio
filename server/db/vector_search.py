@@ -39,7 +39,7 @@ class VectorSearch:
         
         return response.data
     
-    def format_search_results(self, results, max_sources=3):
+    def format_search_results(self, results, max_sources=6):
         """
         Format search results for presentation to the doctor.
         Limits to maximum number of sources specified.

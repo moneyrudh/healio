@@ -1,285 +1,311 @@
-// components/chat/index.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PaperAirplaneIcon, MicrophoneIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { Button, Spinner } from '../shared';
-import { ChatMessage, MedicalSource, ConsultationSection } from '../../types';
+import { ChatMessage, MedicalSource, ConsultationSection, TextMessage, RagMessage, MessageContent } from '../../types';
 
 // Helper to format timestamp
 const formatTime = (timestamp: string) => {
-  try {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch (e) {
-    return '';
-  }
+    try {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+        return '';
+    }
 };
 
 // Individual chat message component
-// components/chat/index.tsx - Updated Message component
-
-// components/chat/index.tsx - Updated Message component
-
 interface MessageProps {
-    message: ChatMessage;
-  }
-  
-  export const Message: React.FC<MessageProps> = ({ message }) => {
-    const isAI = message.sender === 'ai';
-    
+    message_props: ChatMessage;
+}
+
+export const Message: React.FC<MessageProps> = ({ message_props }) => {
+    const isAI = message_props.sender === 'ai';
     // Extract message content and sources directly from the message object
     const getMessageData = () => {
-      return {
-        content: message.message.content || '',
-        sources: message.message.type == "rag" ? message.message.sources : [],
-        type: message.message.type || 'text'
-      };
+        return {
+            content: message_props.message.content || '',
+            sources: message_props.message.type === "rag" ? message_props.message.sources : [],
+            type: message_props.message.type || 'text'
+        };
     };
-    
+
     const { content, sources, type } = getMessageData();
-    
+
     return (
-      <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-4`}>
-        <div className={`max-w-[80%] ${isAI ? 'order-2' : 'order-1'}`}>
-          {/* Message bubble */}
-          <div 
-            className={`
-              rounded-2xl p-4 shadow-sm
-              ${isAI 
-                ? 'bg-primary-50 dark:bg-primary-900/30 rounded-tl-none' 
-                : 'bg-white dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
-              }
-            `}
-          >
-            <div className="whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
-              {content}
-            </div>
-            
-            {/* Sources citation section - only for RAG type messages */}
-            {type === 'rag' && sources && sources.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
-                <h4 className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
-                  Sources:
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {sources.map((source: MedicalSource, index: number) => (
-                    <div 
-                      key={index}
-                      className="group relative"
-                    >
-                      <span className="px-2 py-1 bg-primary-100 dark:bg-primary-800 rounded text-xs font-medium cursor-help">
-                        {index + 1}
-                      </span>
-                      
-                      {/* Tooltip */}
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-white dark:bg-neutral-700 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                        <p className="font-medium text-sm mb-1">{source.title}</p>
-                        {source.authors && source.authors.length > 0 && (
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                            {source.authors.join(', ')}
-                          </p>
-                        )}
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                          PMCID: {source.pmcid || 'N/A'}
-                        </p>
-                      </div>
+        <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-4`}>
+            <div className={`max-w-[80%] ${isAI ? 'order-2' : 'order-1'}`}>
+                {/* Message bubble */}
+                <div
+                    className={`
+            rounded-2xl p-4 shadow-sm
+            ${isAI
+                            ? 'bg-primary-50 dark:bg-primary-900/30 rounded-tl-none'
+                            : 'bg-white dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
+                        }
+          `}
+                >
+                    <div className="whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
+                        {content}
                     </div>
-                  ))}
+
+                    {/* Sources citation section - only for RAG type messages */}
+                    {type === 'rag' && sources && sources.length > 0 && (
+                        <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
+                            <h4 className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">
+                                Sources:
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                                {sources.map((source: MedicalSource, index: number) => (
+                                    <div
+                                        key={index}
+                                        className="relative group"
+                                    >
+                                        <span className="inline-block px-2 py-1 bg-primary-100 dark:bg-primary-800 hover:bg-primary-200 dark:hover:bg-primary-700 rounded text-xs font-medium cursor-help transition-colors">
+                                            {index + 1}
+                                        </span>
+
+                                        {/* Improved Tooltip - fixed positioning and better design */}
+                                        <div className="opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-4 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700">
+                                            {/* Tooltip arrow */}
+                                            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 bg-white dark:bg-neutral-800 border-r border-b border-neutral-200 dark:border-neutral-700"></div>
+
+                                            {/* Source number badge */}
+                                            <div className="inline-block px-2 py-0.5 bg-primary-100 dark:bg-primary-800 rounded text-xs font-medium mb-1">
+                                                Source {index + 1}
+                                            </div>
+
+                                            {/* Source title */}
+                                            <h4 className="font-medium text-neutral-900 dark:text-white text-sm mb-2">
+                                                {source.title}
+                                            </h4>
+
+                                            {/* Authors if available */}
+                                            {source.authors && source.authors.length > 0 && (
+                                                <p className="text-xs text-neutral-600 dark:text-neutral-300 mb-2">
+                                                    <span className="font-medium">Authors:</span> {source.authors.join(', ')}
+                                                </p>
+                                            )}
+
+                                            {/* Publication details */}
+                                            {/* <div className="flex flex-wrap gap-2 text-xs">
+                        {source.pmcid && (
+                          <div className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded">
+                            <span className="font-medium">PMCID:</span> {source.pmcid}
+                          </div>
+                        )}
+                        
+                        {source.pmid && (
+                          <div className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded">
+                            <span className="font-medium">PMID:</span> {source.pmid}
+                          </div>
+                        )}
+                        
+                        {source.year && (
+                          <div className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded">
+                            <span className="font-medium">Year:</span> {source.year}
+                          </div>
+                        )}
+                      </div> */}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Message timestamp */}
-          <div className={`mt-1 text-xs text-neutral-500 ${isAI ? 'text-left' : 'text-right'}`}>
-            {formatTime(message.timestamp)}
-          </div>
+
+                {/* Message timestamp */}
+                <div className={`mt-1 text-xs text-neutral-500 ${isAI ? 'text-left' : 'text-right'}`}>
+                    {formatTime(message_props.timestamp)}
+                </div>
+            </div>
         </div>
-      </div>
     );
-  };
+};
+
 // Chat input component
 interface ChatInputProps {
-  onSendMessage: (message: string) => void;
-  isLoading: boolean;
-  disabled?: boolean;
-  currentSection: ConsultationSection | string;
+    onSendMessage: (message: string) => void;
+    isLoading: boolean;
+    disabled?: boolean;
+    currentSection: ConsultationSection | string;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
-  onSendMessage,
-  isLoading,
-  disabled = false,
-  currentSection
+    onSendMessage,
+    isLoading,
+    disabled = false,
+    currentSection
 }) => {
-  const [message, setMessage] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [message, setMessage] = useState('');
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea as content grows
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [message]);
+    // Auto-resize textarea as content grows
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [message]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!message.trim() || isLoading || disabled) return;
-    
-    onSendMessage(message);
-    setMessage('');
-  };
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
 
-  // Handle text input
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-  };
+        if (!message.trim() || isLoading || disabled) return;
 
-  // Handle keyboard shortcuts - Submit on Ctrl+Enter or Cmd+Enter
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      handleSubmit(e);
-    }
-  };
+        onSendMessage(message);
+        setMessage('');
+    };
 
-  // Check if we're on the complete section
-  const isComplete = currentSection === ConsultationSection.COMPLETE;
+    // Handle text input
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setMessage(e.target.value);
+    };
 
-  return (
-    <form onSubmit={handleSubmit} className="relative">
-      {isComplete ? (
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-          <DocumentTextIcon className="h-6 w-6 mx-auto mb-2 text-green-600 dark:text-green-400" />
-          <p className="text-green-800 dark:text-green-300 mb-1 font-medium">Consultation Complete</p>
-          <p className="text-green-700 dark:text-green-400 text-sm">
-            This consultation is now complete. Switch to the Summary tab to view and download the report.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="flex items-end border border-neutral-300 dark:border-neutral-700 rounded-lg focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 overflow-hidden bg-white dark:bg-neutral-800">
-            <textarea
-              ref={textareaRef}
-              value={message}
-              onChange={handleChange}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                disabled 
-                  ? "Input disabled" 
-                  : "Type your message..."
-              }
-              disabled={disabled || isLoading}
-              className="w-full py-3 px-4 focus:outline-none resize-none min-h-[56px] max-h-[150px] bg-transparent text-neutral-800 dark:text-white"
-              rows={1}
-            />
-            
-            <div className="p-2 flex">
-              {/* Microphone button (placeholder for now) - will implement speech to text later */}
-              <button
-                type="button"
-                disabled={true} // Disabled as per requirements to implement later
-                className="rounded-full p-2 text-neutral-400 bg-neutral-100 dark:bg-neutral-700 mr-1 opacity-50 cursor-not-allowed"
-                title="Speech input will be implemented later"
-              >
-                <MicrophoneIcon className="h-5 w-5" />
-              </button>
-              
-              {/* Send button */}
-              <button
-                type="submit"
-                disabled={!message.trim() || isLoading || disabled}
-                className={`
+    // Handle keyboard shortcuts - Submit on Ctrl+Enter or Cmd+Enter
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            handleSubmit(e);
+        }
+    };
+
+    // Check if we're on the complete section
+    const isComplete = currentSection === ConsultationSection.COMPLETE;
+
+    return (
+        <form onSubmit={handleSubmit} className="relative">
+            {isComplete ? (
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
+                    <DocumentTextIcon className="h-6 w-6 mx-auto mb-2 text-green-600 dark:text-green-400" />
+                    <p className="text-green-800 dark:text-green-300 mb-1 font-medium">Consultation Complete</p>
+                    <p className="text-green-700 dark:text-green-400 text-sm">
+                        This consultation is now complete. Switch to the Summary tab to view and download the report.
+                    </p>
+                </div>
+            ) : (
+                <>
+                    <div className="flex items-end border border-neutral-300 dark:border-neutral-700 rounded-lg focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 overflow-hidden bg-white dark:bg-neutral-800">
+                        <textarea
+                            ref={textareaRef}
+                            value={message}
+                            onChange={handleChange}
+                            onKeyDown={handleKeyDown}
+                            placeholder={
+                                disabled
+                                    ? "Input disabled"
+                                    : "Type your message..."
+                            }
+                            disabled={disabled || isLoading}
+                            className="w-full py-3 px-4 focus:outline-none resize-none min-h-[56px] max-h-[150px] bg-transparent text-neutral-800 dark:text-white"
+                            rows={1}
+                        />
+
+                        <div className="p-2 flex">
+                            {/* Microphone button (placeholder for now) - will implement speech to text later */}
+                            <button
+                                type="button"
+                                disabled={true} // Disabled as per requirements to implement later
+                                className="rounded-full p-2 text-neutral-400 bg-neutral-100 dark:bg-neutral-700 mr-1 opacity-50 cursor-not-allowed"
+                                title="Speech input will be implemented later"
+                            >
+                                <MicrophoneIcon className="h-5 w-5" />
+                            </button>
+
+                            {/* Send button */}
+                            <button
+                                type="submit"
+                                disabled={!message.trim() || isLoading || disabled}
+                                className={`
                   rounded-full p-2 
                   ${message.trim() && !isLoading && !disabled
-                    ? 'bg-primary-500 text-white hover:bg-primary-600'
-                    : 'bg-neutral-200 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400 cursor-not-allowed'
-                  }
+                                        ? 'bg-primary-500 text-white hover:bg-primary-600'
+                                        : 'bg-neutral-200 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400 cursor-not-allowed'
+                                    }
                   transition-colors
                 `}
-              >
-                {isLoading ? (
-                  <Spinner size="sm" />
-                ) : (
-                  <PaperAirplaneIcon className="h-5 w-5" />
-                )}
-              </button>
-            </div>
-          </div>
-          
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 text-right">
-            Press Ctrl+Enter to send
-          </p>
-        </>
-      )}
-    </form>
-  );
+                            >
+                                {isLoading ? (
+                                    <Spinner size="sm" />
+                                ) : (
+                                    <PaperAirplaneIcon className="h-5 w-5" />
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 text-right">
+                        Press Ctrl+Enter to send
+                    </p>
+                </>
+            )}
+        </form>
+    );
 };
 
 // Chat message list component
 interface MessageListProps {
-  messages: ChatMessage[];
-  isLoading: boolean;
+    messages: ChatMessage[];
+    isLoading: boolean;
 }
 
-export const MessageList: React.FC<MessageListProps> = ({ 
-  messages,
-  isLoading
+export const MessageList: React.FC<MessageListProps> = ({
+    messages,
+    isLoading
 }) => {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    // Auto-scroll to bottom when messages change
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
-  return (
-    <div className="flex-1 overflow-y-auto py-4 px-2">
-      <div className="space-y-6">
-        {messages.map((message, index) => (
-          <Message key={`${message.id || index}`} message={message} />
-        ))}
-        
-        {isLoading && !messages.find(m => m.id?.startsWith('temp-ai-')) && (
-          <div className="flex justify-center py-4">
-            <div className="dot-loading">
-              <div></div>
-              <div></div>
-              <div></div>
+    return (
+        <div className="flex-1 overflow-y-auto py-4 px-2">
+            <div className="space-y-6">
+                {messages.map((message, index) => (
+                    <Message key={`${message.id || index}`} message_props={message} />
+                ))}
+
+                {isLoading && !messages.find(m => m.id?.startsWith('temp-ai-')) && (
+                    <div className="flex justify-center py-4">
+                        <div className="dot-loading">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </div>
+                )}
+
+                <div ref={messagesEndRef} />
             </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 // Complete chat interface
 interface ChatInterfaceProps {
-  messages: ChatMessage[];
-  onSendMessage: (message: string) => void;
-  isLoading: boolean;
-  currentSection: ConsultationSection | string;
+    messages: ChatMessage[];
+    onSendMessage: (message: string) => void;
+    isLoading: boolean;
+    currentSection: ConsultationSection | string;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
-  messages,
-  onSendMessage,
-  isLoading,
-  currentSection
+    messages,
+    onSendMessage,
+    isLoading,
+    currentSection
 }) => {
-  return (
-    <div className="flex flex-col h-full">
-      <MessageList messages={messages} isLoading={isLoading} />
-      <div className="border-t border-neutral-200 dark:border-neutral-700 p-4">
-        <ChatInput 
-          onSendMessage={onSendMessage} 
-          isLoading={isLoading} 
-          currentSection={currentSection}
-        />
-      </div>
-    </div>
-  );
+    return (
+        <div className="flex flex-col h-full">
+            <MessageList messages={messages} isLoading={isLoading} />
+            <div className="border-t border-neutral-200 dark:border-neutral-700 p-4">
+                <ChatInput
+                    onSendMessage={onSendMessage}
+                    isLoading={isLoading}
+                    currentSection={currentSection}
+                />
+            </div>
+        </div>
+    );
 };

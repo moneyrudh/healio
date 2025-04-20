@@ -1,5 +1,5 @@
 // ChatContext.tsx
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Provider,
@@ -59,6 +59,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Chat state
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingSummary, setIsLoadingSummary] = useState(false);
     const [currentSection, setCurrentSection] = useState<ConsultationSection | string>(
         ConsultationSection.CHIEF_COMPLAINT
     );
@@ -74,12 +75,23 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     }, [currentSession]);
 
+    useEffect(() => {
+        // When the session transitions to COMPLETE state, preload the summary
+        if (currentSection === ConsultationSection.COMPLETE ||
+            (currentSession && currentSession.status === 'completed')) {
+            // Only load if not already loaded
+            if (!summary) {
+                loadSummary();
+            }
+        }
+    }, [currentSection, currentSession?.status]);
+
     const transformMessage = (message: any): MessageContent => {
         if (typeof message === 'string') {
-          return {
-            type: 'text',
-            content: message
-          };
+            return {
+                type: 'text',
+                content: message
+            };
         }
         return message as MessageContent;
     };
@@ -192,8 +204,8 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     consultation_session_id: currentSession.id,
                     sender: 'ai',
                     message: {
-                      type: 'text',
-                      content: ''
+                        type: 'text',
+                        content: ''
                     },
                     section: currentSection,
                     timestamp: new Date().toISOString(),
@@ -324,16 +336,16 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const loadSummary = async () => {
-        if (!currentSession) return;
+        if (!currentSession?.id || isLoadingSummary) return;
 
         try {
-            setIsLoading(true);
+            setIsLoadingSummary(true);
             const summaryData = await api.getConsultationSummary(currentSession.id);
             setSummary(summaryData);
         } catch (error) {
             console.error('Error loading summary:', error);
         } finally {
-            setIsLoading(false);
+            setIsLoadingSummary(false);
         }
     };
 
