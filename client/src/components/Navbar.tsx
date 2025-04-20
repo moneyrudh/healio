@@ -70,7 +70,7 @@ const Navbar: React.FC = () => {
           <div className="flex items-center space-x-8">
             {[
               { path: '/chat', label: 'Start Consultation' },
-              { path: '/summary', label: 'Patient History' }
+              { path: '/history', label: 'Patient History' }
             ].map((link, index) => (
               <motion.div
                 key={link.path}

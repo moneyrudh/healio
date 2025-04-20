@@ -37,12 +37,12 @@ export const Message: React.FC<MessageProps> = ({ message_props }) => {
                 {/* Message bubble */}
                 <div
                     className={`
-            rounded-2xl p-4 shadow-sm
-            ${isAI
+                        rounded-2xl p-4 shadow-sm
+                        ${isAI
                             ? 'bg-primary-50 dark:bg-primary-900/30 rounded-tl-none'
                             : 'bg-white dark:bg-neutral-800 rounded-tr-none border border-neutral-200 dark:border-neutral-700'
                         }
-          `}
+                    `}
                 >
                     <div className="whitespace-pre-wrap text-neutral-800 dark:text-neutral-200">
                         {content}
@@ -60,52 +60,36 @@ export const Message: React.FC<MessageProps> = ({ message_props }) => {
                                         key={index}
                                         className="relative group"
                                     >
-                                        <span className="inline-block px-2 py-1 bg-primary-100 dark:bg-primary-800 hover:bg-primary-200 dark:hover:bg-primary-700 rounded text-xs font-medium cursor-help transition-colors">
-                                            {index + 1}
-                                        </span>
+                                        <a
+                                            href={`https://pubmed.ncbi.nlm.nih.gov/${source.id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-block"
+                                        >
+                                            <span className="inline-block px-2 py-1 bg-primary-100 dark:bg-primary-800 hover:bg-primary-200 dark:hover:bg-primary-700 rounded text-xs font-medium cursor-pointer transition-colors">
+                                                {index + 1}
+                                            </span>
+                                        </a>
 
-                                        {/* Improved Tooltip - fixed positioning and better design */}
-                                        <div className="opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-4 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700">
-                                            {/* Tooltip arrow */}
-                                            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 bg-white dark:bg-neutral-800 border-r border-b border-neutral-200 dark:border-neutral-700"></div>
+                                        <div className="group-hover:block hidden absolute left-0 bottom-full mb-2 w-64 z-50">
+                                            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 p-4">
+                                                {/* Source number badge */}
+                                                <div className="inline-block px-2 py-0.5 bg-primary-100 dark:bg-primary-800 rounded text-xs font-medium mb-1">
+                                                    Source {index + 1}
+                                                </div>
 
-                                            {/* Source number badge */}
-                                            <div className="inline-block px-2 py-0.5 bg-primary-100 dark:bg-primary-800 rounded text-xs font-medium mb-1">
-                                                Source {index + 1}
+                                                {/* Source title */}
+                                                <h4 className="font-medium text-neutral-900 dark:text-white text-sm mb-2">
+                                                    {source.title}
+                                                </h4>
+
+                                                {/* Authors if available */}
+                                                {source.authors && source.authors.length > 0 && (
+                                                    <p className="text-xs text-neutral-600 dark:text-neutral-300 mb-2">
+                                                        <span className="font-medium">Authors:</span> {source.authors.join(', ')}
+                                                    </p>
+                                                )}
                                             </div>
-
-                                            {/* Source title */}
-                                            <h4 className="font-medium text-neutral-900 dark:text-white text-sm mb-2">
-                                                {source.title}
-                                            </h4>
-
-                                            {/* Authors if available */}
-                                            {source.authors && source.authors.length > 0 && (
-                                                <p className="text-xs text-neutral-600 dark:text-neutral-300 mb-2">
-                                                    <span className="font-medium">Authors:</span> {source.authors.join(', ')}
-                                                </p>
-                                            )}
-
-                                            {/* Publication details */}
-                                            {/* <div className="flex flex-wrap gap-2 text-xs">
-                        {source.pmcid && (
-                          <div className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded">
-                            <span className="font-medium">PMCID:</span> {source.pmcid}
-                          </div>
-                        )}
-                        
-                        {source.pmid && (
-                          <div className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded">
-                            <span className="font-medium">PMID:</span> {source.pmid}
-                          </div>
-                        )}
-                        
-                        {source.year && (
-                          <div className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded">
-                            <span className="font-medium">Year:</span> {source.year}
-                          </div>
-                        )}
-                      </div> */}
                                         </div>
                                     </div>
                                 ))}

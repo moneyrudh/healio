@@ -6,6 +6,7 @@ import { ChatProvider } from './ChatContext';
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import ChatPage from './pages/ChatPage';
+import HistoryPage from './pages/HistoryPage';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/chat/:id" element={<ChatPage />} />
-              <Route path="/summary" element={<div className="container-custom py-16 text-center">Patient history page coming soon</div>} />
+              <Route path="/history" element={<HistoryPage />} />
             </Routes>
           </div>
         </ChatProvider>

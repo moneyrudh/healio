@@ -390,6 +390,54 @@ def chat():
         return Response(stream_with_context(generate()), mimetype='text/event-stream')
     return jsonify(response_data)
 
+@app.route('/api/history', methods=['GET'])
+def get_consultation_history():
+    """Get complete consultation history with patient and provider details"""
+    try:
+        # Get all consultation sessions
+        result = consultation_manager.supabase.table('consultation_sessions').select('*').order('session_date', desc=True).execute()
+        
+        if hasattr(result, 'error') and result.error:
+            return jsonify({"error": "Error retrieving consultations"}), 500
+            
+        sessions = result.data
+        
+        # Enrich with patient and provider details
+        history = []
+        for session in sessions:
+            try:
+                # Get patient data
+                patient = patient_manager.get_patient(session['patient_id'])
+                patient_name = patient['name'] if patient else 'Unknown Patient'
+                
+                # Get provider data
+                provider = provider_manager.get_provider_by_id(session['provider_id'])
+                provider_name = provider['name'] if provider else 'Unknown Provider'
+                provider_specialty = provider.get('specialty', '') if provider else ''
+                
+                # Create enriched record
+                history_record = {
+                    'id': session['id'],
+                    'patient_id': session['patient_id'],
+                    'patient_name': patient_name,
+                    'provider_id': session['provider_id'],
+                    'provider_name': provider_name,
+                    'provider_specialty': provider_specialty,
+                    'session_date': session['session_date'],
+                    'status': session['status'],
+                    'current_section': session['current_section']
+                }
+                
+                history.append(history_record)
+            except Exception as e:
+                # Skip any records that fail to process
+                print(f"Error processing session {session['id']}: {str(e)}")
+                continue
+        
+        return jsonify(history)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/summary', methods=['GET'])
 def get_summary():
     """Get summary for a consultation"""

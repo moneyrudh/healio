@@ -67,6 +67,11 @@ import {
     const response = await fetch(url);
     return handleResponse(response);
   };
+
+  export const getConsultationHistory = async (): Promise<any[]> => {
+    const response = await fetch(`${API_BASE_URL}/api/history`);
+    return handleResponse(response);
+  };
   
   export const getConsultationById = async (id: string): Promise<ConsultationSession> => {
     const response = await fetch(`${API_BASE_URL}/api/consultations?id=${id}`);

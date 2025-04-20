@@ -120,3 +120,16 @@ export interface Provider {
     dob: string;
     other_info?: Record<string, any>;
   }
+
+  // Add this to types.ts
+export interface ConsultationHistoryItem {
+  id: string;
+  patient_id: string;
+  patient_name: string;
+  provider_id: string;
+  provider_name: string;
+  provider_specialty: string;
+  session_date: string;
+  status: 'in_progress' | 'completed';
+  current_section: string;
+}
