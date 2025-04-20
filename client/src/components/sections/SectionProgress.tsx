@@ -44,7 +44,7 @@ export const SectionProgress: React.FC<SectionProgressProps> = ({
         Consultation Progress
       </h3>
       
-      <div className="space-y-3">
+      <div className="space-y-3 mb-10">
         {orderedSections.map((section, index) => {
           // Determine section status
           const isCompleted = index < currentSectionIndex;
