@@ -834,7 +834,7 @@ const ModernLandingPage: React.FC = () => {
             >
               <Link
                 to="/chat"
-                className="group relative px-8 py-4 rounded-full bg-white text-primary-600 font-medium hover:bg-primary-50 transition-colors shadow-lg text-lg w-full sm:w-auto flex items-center justify-center overflow-hidden"
+                className="group relative px-8 py-4 rounded-full bg-white text-accent-600 dark:text-accent-600 font-medium hover:bg-primary-50 transition-colors shadow-lg text-lg w-full sm:w-auto flex items-center justify-center overflow-hidden"
               >
                 <span className="relative z-10 flex items-center">
                   Start consultation
@@ -852,7 +852,8 @@ const ModernLandingPage: React.FC = () => {
               </Link>
               
               <a
-                href="#features-section"
+                href="https://www.youtube.com/watch?v=uZYBl5RUcxU"
+                target="_blank"
                 className="group relative px-8 py-4 rounded-full border-2 border-white text-white font-medium hover:bg-white/10 transition-colors w-full sm:w-auto flex items-center justify-center overflow-hidden"
               >
                 <span className="relative z-10">Watch demo</span>
