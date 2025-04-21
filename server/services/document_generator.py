@@ -57,6 +57,7 @@ class DocumentGenerator:
                 # Log error and raise
                 print(f"Error generating PDF: {e.stdout.decode('utf-8')}")
                 print(f"LaTeX error: {e.stderr.decode('utf-8')}")
+                print("Error:", e)
                 raise Exception(f"Failed to generate PDF: {str(e)}")
     
     def generate_latex(self, summary_data, patient_data):
