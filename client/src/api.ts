@@ -9,7 +9,7 @@ import {
     MedicalSource
   } from './types';
   
-  const API_BASE_URL = process.env.HEALIO_SERVER_URL;
+  const API_BASE_URL = process.env.HEALIO_SERVER_URL || "https://server.healio.fyi";
   
   // Error handling utility
   const handleResponse = async (response: Response) => {
